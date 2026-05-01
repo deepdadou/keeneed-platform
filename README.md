@@ -112,3 +112,49 @@ https://keeneed.com/admin-login.html
 ```
 
 登录成功后进入后台统计页面，API 管理页面可通过 `/admin-api.html` 访问。
+
+### HTTPS 与混合内容检查
+
+浏览器提示“证书有效，但网站某些部分不安全”时，通常不是 Let's Encrypt 证书问题，而是页面加载了 `http://`、`ws://` 等非 HTTPS 资源。
+
+部署前检查浏览器可见代码：
+
+```bash
+rg "http://|ws://|action=|src=|href=|fetch\\(|WebSocket" frontend backend
+```
+
+当前项目中，前端页面和后台模板使用的是相对路径或 `https://` 链接。Nginx 配置里的 `proxy_pass http://127.0.0.1:...` 是服务器内部反向代理，不会暴露给浏览器，不属于 mixed content。
+
+推荐在 HTTPS server 块中保留以下安全配置：
+
+```nginx
+server {
+    listen 80;
+    server_name keeneed.com www.keeneed.com;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name keeneed.com www.keeneed.com;
+
+    ssl_certificate /etc/letsencrypt/live/keeneed.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/keeneed.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header Content-Security-Policy "upgrade-insecure-requests" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+    root /var/www/keeneed-website;
+    index index.html index.htm;
+}
+```
+
+说明：
+
+- `return 301 https://$host$request_uri;` 强制 HTTP 跳转 HTTPS。
+- `Content-Security-Policy: upgrade-insecure-requests` 会要求浏览器把页面里的不安全资源请求升级到 HTTPS。
+- `Strict-Transport-Security` 会让浏览器后续强制使用 HTTPS 访问站点。
+- 如果第三方资源本身不支持 HTTPS，`upgrade-insecure-requests` 不能修复该资源，需要删除或替换为支持 HTTPS 的地址。
