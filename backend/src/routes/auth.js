@@ -277,4 +277,97 @@ router.put("/profile", authMiddleware, async (req, res) => {
   }
 });
 
+
+// ==========================================
+// 邮箱验证码发送
+// ==========================================
+const nodemailer = require("nodemailer");
+const verificationCodes = new Map();
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [email, data] of verificationCodes.entries()) {
+    if (now - data.createdAt > 300000) verificationCodes.delete(email);
+  }
+}, 60000);
+
+function generateCode() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+async function sendVerificationEmail(email, code) {
+  const transporter = nodemailer.createTransport({
+    host: "smtp.aliyun.com",
+    port: 465,
+    secure: true,
+    auth: {
+      user: "noreply@keeneed.com",
+      pass: process.env.SMTP_PASSWORD || "K33n33d2026Smtp"
+    }
+  });
+  try {
+    await transporter.sendMail({
+      from: "KEENEED <noreply@keeneed.com>",
+      to: email,
+      subject: "KEENEED 验证码",
+      html: `<html><body style="font-family:sans-serif;background:#0a0f1a;color:#e0e6ed;">
+<div style="max-width:500px;margin:0 auto;background:#111827;border-radius:12px;padding:30px;">
+<h2 style="color:#00f0ff;">KEENEED 验证码</h2>
+<p>您的验证码是：</p>
+<div style="font-size:32px;color:#00f0ff;letter-spacing:8px;">${code}</div>
+<p>5分钟内有效</p>
+</div></body></html>`
+    });
+    return true;
+  } catch (err) {
+    console.error("Email error:", err);
+    return false;
+  }
+}
+
+router.post("/send-code", async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: "邮箱格式不正确" });
+    }
+    const [existing] = await pool.query("SELECT id FROM users WHERE email = ?", [email]);
+    if (existing.length > 0) return res.status(409).json({ error: "该邮箱已注册" });
+    const code = generateCode();
+    verificationCodes.set(email, { code, createdAt: Date.now(), attempts: 0 });
+    const sent = await sendVerificationEmail(email, code);
+    if (!sent) return res.status(500).json({ error: "邮件发送失败" });
+    res.json({ success: true, message: "验证码已发送" });
+  } catch (err) {
+    console.error("Send code error:", err);
+    res.status(500).json({ error: "发送验证码失败" });
+  }
+});
+
+router.post("/verify-code", async (req, res) => {
+  try {
+    const { email, code } = req.body;
+    if (!email || !code) return res.status(400).json({ error: "参数缺失" });
+    const stored = verificationCodes.get(email);
+    if (!stored) return res.status(400).json({ error: "未请求验证码" });
+    if (Date.now() - stored.createdAt > 300000) {
+      verificationCodes.delete(email);
+      return res.status(400).json({ error: "验证码已过期" });
+    }
+    if (stored.attempts >= 5) {
+      verificationCodes.delete(email);
+      return res.status(400).json({ error: "尝试次数过多" });
+    }
+    if (stored.code !== code) {
+      stored.attempts++;
+      return res.status(400).json({ error: "验证码错误" });
+    }
+    verificationCodes.delete(email);
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Verify code error:", err);
+    res.status(500).json({ error: "验证失败" });
+  }
+});
+
 module.exports = { router, authMiddleware };
