@@ -4,6 +4,7 @@
  */
 
 const crypto = require('crypto');
+const { v4: uuidv4 } = require('uuid');
 const { pool } = require('../config/database');
 
 class AgentService {
@@ -46,10 +47,10 @@ class AgentService {
     const capabilitiesJson = JSON.stringify(capabilities || []);
 
     await pool.query(
-      `INSERT INTO agents 
-       (keeneed_id, name, description, capabilities, contact, owner_name, api_key, status) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, 'active')`,
-      [keeneedId, name, description || '', capabilitiesJson, contact || '', owner_name || '', apiKey]
+      `INSERT INTO agents
+       (id, keeneed_id, name, description, capabilities, contact, owner_name, api_key, status) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active')`,
+      [uuidv4(), keeneedId, name, description || '', capabilitiesJson, contact || '', owner_name || '', apiKey]
     );
 
     return {
