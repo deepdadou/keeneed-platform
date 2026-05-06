@@ -4,6 +4,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const { sendMail: directMailSend } = require('./utils/directMail');
 const { initDatabase, pool } = require('./config/database');
 const agentRoutes = require('./routes/agentRoutes');
 const adminRoutes = require('./routes/adminRoutes');
@@ -15,6 +16,7 @@ const { router: authRoutes, authMiddleware } = require('./routes/auth');
 const app = express();
 const PORT = process.env.PORT || 3001;
 const JWT_SECRET = process.env.JWT_SECRET || 'keeneed_jwt_secret_2026';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
 // 中间件
 app.use(helmet());
@@ -29,9 +31,98 @@ app.use('/api/agents', agentRoutes);
 app.use('/api/users/list', agentRoutes);
 app.use('/api/auth', authRoutes);
 
-// ========== 邮箱验证路由别名（兼容旧路径） ==========
-app.use('/api/send-code', authRoutes);
-app.use('/api/verify-code', authRoutes);
+// ========== 邮箱验证路由别名（直接处理） ==========
+const verificationCodes = new Map();
+
+// Clean up expired codes periodically
+setInterval(() => {
+  const now = Date.now();
+  for (const [email, data] of verificationCodes.entries()) {
+    if (now - data.createdAt > 300000) verificationCodes.delete(email);
+  }
+}, 60000);
+
+function generateCode() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+async function sendVerificationEmail(email, code) {
+  try {
+    const htmlBody = `<html><body style="font-family:sans-serif;background:#0a0f1a;color:#e0e6ed;">
+<div style="max-width:500px;margin:0 auto;background:#111827;border-radius:12px;padding:30px;">
+<h2 style="color:#00f0ff;">KEENEED 验证码</h2>
+<p>您的验证码是：</p>
+<div style="font-size:32px;color:#00f0ff;letter-spacing:8px;">${code}</div>
+<p>5分钟内有效</p>
+</div></body></html>`;
+    return await directMailSend(email, 'KEENEED 验证码', htmlBody);
+  } catch (err) {
+    console.error('Email error:', err);
+    return false;
+  }
+}
+// POST /api/send-code
+app.post('/api/send-code', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: '邮箱格式不正确' });
+    }
+    
+    const [existing] = await pool.query('SELECT id FROM users WHERE email = ?', [email]);
+    if (existing.length > 0) {
+      return res.status(409).json({ error: '该邮箱已注册' });
+    }
+    
+    const code = generateCode();
+    verificationCodes.set(email, { code, createdAt: Date.now(), attempts: 0 });
+    
+    const sent = await sendVerificationEmail(email, code);
+    if (!sent) {
+      return res.status(500).json({ error: '邮件发送失败' });
+    }
+    
+    res.json({ success: true, message: '验证码已发送' });
+  } catch (err) {
+    console.error('Send code error:', err);
+    res.status(500).json({ error: '发送验证码失败' });
+  }
+});
+
+// POST /api/verify-code
+app.post('/api/verify-code', async (req, res) => {
+  try {
+    const { email, code } = req.body;
+    if (!email || !code) {
+      return res.status(400).json({ error: '参数缺失' });
+    }
+    
+    const stored = verificationCodes.get(email);
+    if (!stored) {
+      return res.status(400).json({ error: '未请求验证码' });
+    }
+    if (Date.now() - stored.createdAt > 300000) {
+      verificationCodes.delete(email);
+      return res.status(400).json({ error: '验证码已过期' });
+    }
+    if (stored.attempts >= 5) {
+      verificationCodes.delete(email);
+      return res.status(400).json({ error: '尝试次数过多' });
+    }
+    if (stored.code !== code) {
+      stored.attempts++;
+      return res.status(400).json({ error: '验证码错误' });
+    }
+    
+    verificationCodes.delete(email);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Verify code error:', err);
+    res.status(500).json({ error: '验证失败' });
+  }
+});
+
+// /api/v1/auth -> /api/auth (兼容)
 app.use('/api/v1/auth', authRoutes);
 
 // ========== 其他已有路由 ==========
@@ -73,7 +164,7 @@ app.get('/api/v1/chat', (req, res) => {
 });
 app.use('/api/v1/chat', chatRouter);
 
-// ========== /api/register 别名 - 简单实现 ==========
+// ========== /api/register 别名 ==========
 app.post('/api/register', async (req, res) => {
   try {
     const { username, password, email, identity_type, bio } = req.body;
@@ -108,7 +199,7 @@ app.post('/api/register', async (req, res) => {
       success: true,
       message: '注册成功',
       token,
-      user: { id: result.insertId, keeneed_id, username, identity_type: identity_type || 'human' }
+      data: { user_id: result.insertId, keeneed_id, username, identity_type: identity_type || 'human', token }
     });
   } catch (error) {
     console.error('Register error:', error);
@@ -116,7 +207,7 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// ========== 新增: /api/v1/discover ==========
+// ========== /api/v1/discover ==========
 app.get('/api/v1/discover', async (req, res) => {
   try {
     const [agents] = await pool.query(
@@ -143,7 +234,7 @@ app.get('/api/v1/discover', async (req, res) => {
   }
 });
 
-// ========== 新增: /api/v1/identity ==========
+// ========== /api/v1/identity ==========
 app.get('/api/v1/identity', authMiddleware, async (req, res) => {
   try {
     const [users] = await pool.query(
@@ -177,7 +268,7 @@ app.get('/api/v1/identity', authMiddleware, async (req, res) => {
   }
 });
 
-// ========== 新增: /api/tasks ==========
+// ========== /api/tasks ==========
 app.get('/api/tasks', authMiddleware, async (req, res) => {
   try {
     const [tables] = await pool.query("SHOW TABLES LIKE 'tasks'");
@@ -240,6 +331,8 @@ app.get('/', (req, res) => {
       'POST /api/v1/agents/register': 'Register a new agent',
       'GET /api/agents': 'Alias for /api/v1/agents',
       'POST /api/register': 'Alias for /api/auth/register',
+      'POST /api/send-code': 'Send verification code',
+      'POST /api/verify-code': 'Verify code',
       'GET /api/chat': 'Chat module status',
       'GET /api/v1/chat': 'Chat module (same as /api/chat)',
       'GET /api/posts': 'List all posts',
@@ -261,7 +354,7 @@ async function start() {
   try {
     await initDatabase();
     console.log('Database initialized');
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
       console.log('keeneed Agent API running on port ' + PORT);
     });
   } catch (error) {

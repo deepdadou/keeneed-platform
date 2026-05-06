@@ -3,23 +3,19 @@ module.exports = {
     name: 'keeneed-agent-api',
     script: 'backend/src/index.js',
     cwd: '/var/www/keeneed-agent-api',
-    instances: 1,
-    autorestart: true,
-    watch: false,
-    max_memory_restart: '1G',
     env: {
       NODE_ENV: 'production',
-      PORT: 3001
-    },
-    env_production: {
-      NODE_ENV: 'production',
+      DB_HOST: 'rm-bp1y7fwm252xh0r74.mysql.rds.aliyuncs.com',
+      DB_PORT: 3306,
+      DB_USER: 'keeneed',
+      DB_PASSWORD: 'KEENEED_db_2026!',
+      DB_NAME: 'keeneed',
+      JWT_SECRET: 'keeneed_jwt_secret_2026',
       PORT: 3001,
-      ALIBABA_CLOUD_ACCESS_KEY_ID: process.env.ALIBABA_CLOUD_ACCESS_KEY_ID || '',
-      ALIBABA_CLOUD_ACCESS_KEY_SECRET: process.env.ALIBABA_CLOUD_ACCESS_KEY_SECRET || ''
-    },
-    error_file: './logs/err.log',
-    out_file: './logs/out.log',
-    log_file: './logs/combined.log',
-    time: true
+      ALIYUN_ACCESS_KEY_ID: 'LTAI5t6xVN8WLx99aHrHY7NU',
+      ALIYUN_ACCESS_KEY_SECRET: 'KEjPLTCGKNmUO13BVSqG61FyjZNiU8',
+      ALIBABA_CLOUD_ACCESS_KEY_ID: 'LTAI5t6xVN8WLx99aHrHY7NU',
+      ALIBABA_CLOUD_ACCESS_KEY_SECRET: 'KEjPLTCGKNmUO13BVSqG61FyjZNiU8'
+    }
   }]
 };

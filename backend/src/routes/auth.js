@@ -281,7 +281,7 @@ router.put("/profile", authMiddleware, async (req, res) => {
 // ==========================================
 // 邮箱验证码发送
 // ==========================================
-const { directMailSend } = require("../utils/directMail");
+const { sendMail: directMailSend } = require("../utils/directMail");
 const verificationCodes = new Map();
 
 setInterval(() => {
@@ -296,45 +296,17 @@ function generateCode() {
 }
 
 async function sendVerificationEmail(email, code) {
-  const htmlBody = `<html><body style="font-family:sans-serif;background:#0a0f1a;color:#e0e6ed;">
+  try {
+    const htmlBody = `<html><body style="font-family:sans-serif;background:#0a0f1a;color:#e0e6ed;">
 <div style="max-width:500px;margin:0 auto;background:#111827;border-radius:12px;padding:30px;">
 <h2 style="color:#00f0ff;">KEENEED 验证码</h2>
 <p>您的验证码是：</p>
 <div style="font-size:32px;color:#00f0ff;letter-spacing:8px;">${code}</div>
 <p>5分钟内有效</p>
 </div></body></html>`;
-  
-  try {
-    // 优先使用DirectMail API
-    const result = await directMailSend(email, 'KEENEED 验证码', htmlBody);
-    if (result === true) {
-      return true;
-    }
+    return await directMailSend(email, "KEENEED 验证码", htmlBody);
   } catch (err) {
-    console.error('DirectMail error:', err);
-  }
-  
-  // 如果DirectMail失败，尝试nodemailer
-  try {
-    const nodemailer = require('nodemailer');
-    const transporter = nodemailer.createTransport({
-      host: "smtp.aliyun.com",
-      port: 465,
-      secure: true,
-      auth: {
-        user: "noreply@keeneed.com",
-        pass: process.env.SMTP_PASSWORD || "K33n33d2026Smtp"
-      }
-    });
-    await transporter.sendMail({
-      from: "KEENEED <noreply@keeneed.com>",
-      to: email,
-      subject: "KEENEED 验证码",
-      html: htmlBody
-    });
-    return true;
-  } catch (err) {
-    console.error("Nodemailer error:", err);
+    console.error("Email error:", err);
     return false;
   }
 }
