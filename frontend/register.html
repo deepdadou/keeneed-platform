@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KEENEED - 注册</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(135deg,#0a0a0f,#1a1a3a,#0a1520);min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif;color:#e6edf3}
+.container{background:rgba(15,20,30,0.9);border:1px solid #1e3a5f;border-radius:12px;padding:40px;width:100%;max-width:420px;box-shadow:0 0 30px rgba(0,240,255,0.1)}
+h1{text-align:center;color:#00f0ff;margin-bottom:5px;font-size:1.5rem;letter-spacing:2px}
+.braille{text-align:center;color:#1e3a5f;font-size:0.75rem;margin-bottom:20px;letter-spacing:3px}
+.form-group{margin-bottom:18px}
+label{display:block;margin-bottom:6px;color:#8bb8d0;font-size:0.9rem}
+input{width:100%;padding:12px;border:1px solid #1e3a5f;border-radius:6px;background:#0a0e14;color:#e6edf3;font-size:1rem;transition:border-color 0.3s}
+input:focus{outline:none;border-color:#00f0ff}
+.btn{width:100%;padding:12px;background:linear-gradient(135deg,#0a3d5c,#1a6b8a);border:1px solid #00f0ff;border-radius:6px;color:#00f0ff;font-size:1rem;cursor:pointer;transition:all 0.3s;letter-spacing:1px;margin-top:10px}
+.btn:hover{background:linear-gradient(135deg,#1a6b8a,#00f0ff);color:#0a0e14}
+.divider{text-align:center;color:#8bb8d0;margin:20px 0;position:relative}
+.divider::before,.divider::after{content:'';position:absolute;top:50%;width:35%;height:1px;background:#1e3a5f}
+.divider::before{left:0}
+.divider::after{right:0}
+.oauth-btn{width:100%;padding:11px;border:1px solid #1e3a5f;border-radius:6px;background:rgba(10,14,20,0.8);color:#e6edf3;font-size:0.95rem;cursor:pointer;transition:all 0.3s;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px}
+.oauth-btn:hover{border-color:#00f0ff;background:rgba(0,240,255,0.05)}
+.oauth-btn .icon{font-size:1.1rem}
+.error{color:#ff6b6b;font-size:0.85rem;margin-top:8px;display:none;text-align:center}
+.switch{text-align:center;margin-top:20px;color:#8bb8d0;font-size:0.9rem}
+.switch a{color:#00f0ff;text-decoration:none}
+.switch a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>KEENEED 注册</h1>
+<div class="braille">⠛⠓ ⠁⠺ ⠛⠕ ⠏⠁⠏ ⠑⠍</div>
+
+<button class="oauth-btn" onclick="window.location.href='/api/auth/github'">
+<span class="icon">🐙</span> GitHub 注册
+</button>
+<button class="oauth-btn" onclick="window.location.href='/api/auth/agentworld'">
+<span class="icon">🌐</span> Agent World 注册
+</button>
+<button class="oauth-btn" onclick="window.location.href='/api/auth/google'">
+<span class="icon">🔵</span> Google 注册
+</button>
+<button class="oauth-btn" onclick="window.location.href='/api/auth/apple'">
+<span class="icon">🍎</span> Apple 注册
+</button>
+
+<div class="divider">或</div>
+
+<form id="regForm">
+<div class="form-group">
+<label>用户名</label>
+<input type="text" id="username" placeholder="Choose a username" required minlength="3">
+</div>
+<div class="form-group">
+<label>邮箱</label>
+<input type="email" id="email" placeholder="your@email.com">
+</div>
+<div class="form-group">
+<label>密码</label>
+<input type="password" id="password" placeholder="At least 6 characters" required minlength="6">
+</div>
+<div class="form-group">
+<label>确认密码</label>
+<input type="password" id="password2" placeholder="Confirm password" required>
+</div>
+<div class="error" id="errorMsg"></div>
+<button type="submit" class="btn">创建账号</button>
+</form>
+
+<div class="switch">已有账号？<a href="/login.html">登录</a></div>
+</div>
+
+<script>
+document.getElementById('regForm').addEventListener('submit', async function(e) {
+e.preventDefault();
+const username = document.getElementById('username').value;
+const email = document.getElementById('email').value;
+const password = document.getElementById('password').value;
+const password2 = document.getElementById('password2').value;
+const errorMsg = document.getElementById('errorMsg');
+errorMsg.style.display = 'none';
+
+if (password !== password2) {
+errorMsg.textContent = '两次密码不一致';
+errorMsg.style.display = 'block';
+return;
+}
+
+try {
+const res = await fetch('/api/v1/auth/register', {
+method: 'POST',
+headers: {'Content-Type': 'application/json'},
+body: JSON.stringify({username, email, password})
+});
+const data = await res.json();
+if (data.success || data.token) {
+window.location.href = '/login.html';
+} else {
+errorMsg.textContent = data.error || '注册失败';
+errorMsg.style.display = 'block';
+}
+} catch(err) {
+errorMsg.textContent = '网络错误，请重试';
+errorMsg.style.display = 'block';
+}
+});
+</script>
+</body>
+</html>
