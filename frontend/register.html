@@ -1,112 +1,289 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KEENEED - 注册</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:linear-gradient(135deg,#0a0a0f,#1a1a3a,#0a1520);min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif;color:#e6edf3}
-.container{background:rgba(15,20,30,0.9);border:1px solid #1e3a5f;border-radius:12px;padding:40px;width:100%;max-width:420px;box-shadow:0 0 30px rgba(0,240,255,0.1)}
-h1{text-align:center;color:#00f0ff;margin-bottom:5px;font-size:1.5rem;letter-spacing:2px}
-.braille{text-align:center;color:#1e3a5f;font-size:0.75rem;margin-bottom:20px;letter-spacing:3px}
-.form-group{margin-bottom:18px}
-label{display:block;margin-bottom:6px;color:#8bb8d0;font-size:0.9rem}
-input{width:100%;padding:12px;border:1px solid #1e3a5f;border-radius:6px;background:#0a0e14;color:#e6edf3;font-size:1rem;transition:border-color 0.3s}
-input:focus{outline:none;border-color:#00f0ff}
-.btn{width:100%;padding:12px;background:linear-gradient(135deg,#0a3d5c,#1a6b8a);border:1px solid #00f0ff;border-radius:6px;color:#00f0ff;font-size:1rem;cursor:pointer;transition:all 0.3s;letter-spacing:1px;margin-top:10px}
-.btn:hover{background:linear-gradient(135deg,#1a6b8a,#00f0ff);color:#0a0e14}
-.divider{text-align:center;color:#8bb8d0;margin:20px 0;position:relative}
-.divider::before,.divider::after{content:'';position:absolute;top:50%;width:35%;height:1px;background:#1e3a5f}
-.divider::before{left:0}
-.divider::after{right:0}
-.oauth-btn{width:100%;padding:11px;border:1px solid #1e3a5f;border-radius:6px;background:rgba(10,14,20,0.8);color:#e6edf3;font-size:0.95rem;cursor:pointer;transition:all 0.3s;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px}
-.oauth-btn:hover{border-color:#00f0ff;background:rgba(0,240,255,0.05)}
-.oauth-btn .icon{font-size:1.1rem}
-.error{color:#ff6b6b;font-size:0.85rem;margin-top:8px;display:none;text-align:center}
-.switch{text-align:center;margin-top:20px;color:#8bb8d0;font-size:0.9rem}
-.switch a{color:#00f0ff;text-decoration:none}
-.switch a:hover{text-decoration:underline}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KEENEED - 注册</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:linear-gradient(135deg,#0a0a0f,#1a1a3a,#0a1520);min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif;color:#e6edf3}
+    .container{background:rgba(15,20,30,0.9);border:1px solid #1e3a5f;border-radius:12px;padding:40px;width:100%;max-width:420px;box-shadow:0 0 30px rgba(0,240,255,0.1)}
+    h1{text-align:center;color:#00f0ff;margin-bottom:5px;font-size:1.5rem;letter-spacing:2px}
+    .braille{text-align:center;color:#1e3a5f;font-size:0.75rem;margin-bottom:20px;letter-spacing:3px}
+    .step{display:none}
+    .step.active{display:block}
+    .step-indicator{display:flex;justify-content:center;margin-bottom:25px;gap:8px}
+    .step-dot{width:10px;height:10px;border-radius:50%;background:#1e3a5f;transition:all 0.3s}
+    .step-dot.active{background:#00f0ff;box-shadow:0 0 10px #00f0ff}
+    .step-dot.completed{background:#00f0ff}
+    .form-group{margin-bottom:18px}
+    label{display:block;margin-bottom:6px;color:#8bb8d0;font-size:0.9rem}
+    input{width:100%;padding:12px;border:1px solid #1e3a5f;border-radius:6px;background:#0a0e14;color:#e6edf3;font-size:1rem;transition:border-color 0.3s}
+    input:focus{outline:none;border-color:#00f0ff}
+    input:disabled{opacity:0.6;cursor:not-allowed}
+    .btn{width:100%;padding:12px;background:linear-gradient(135deg,#0a3d5c,#1a6b8a);border:1px solid #00f0ff;border-radius:6px;color:#00f0ff;font-size:1rem;cursor:pointer;transition:all 0.3s;letter-spacing:1px;margin-top:10px}
+    .btn:hover:not(:disabled){background:linear-gradient(135deg,#1a6b8a,#00f0ff);color:#0a0e14}
+    .btn:disabled{opacity:0.5;cursor:not-allowed}
+    .btn-secondary{background:transparent;border-color:#8bb8d0;color:#8bb8d0}
+    .btn-secondary:hover:not(:disabled){background:rgba(139,184,208,0.1);color:#e6edf3}
+    .code-group{display:flex;gap:10px}
+    .code-group input{flex:1}
+    .code-group .btn{flex:0 0 auto;margin-top:0;padding:12px 15px}
+    .error{color:#ff6b6b;font-size:0.85rem;margin-top:8px;display:none;text-align:center}
+    .info{background:rgba(0,240,255,0.05);border:1px solid #1e3a5f;border-radius:6px;padding:12px;margin-bottom:15px;font-size:0.85rem;color:#8bb8d0}
+    .switch{text-align:center;margin-top:20px;color:#8bb8d0;font-size:0.9rem}
+    .switch a{color:#00f0ff;text-decoration:none}
+    .switch a:hover{text-decoration:underline}
+    @media(max-width:480px){
+      .container{padding:25px;margin:15px}
+    }
+  </style>
 </head>
 <body>
-<div class="container">
-<h1>KEENEED 注册</h1>
-<div class="braille">⠛⠓ ⠁⠺ ⠛⠕ ⠏⠁⠏ ⠑⠍</div>
+  <div class="container">
+    <h1>KEENEED 注册</h1>
+    <div class="braille">⠛⠓ ⠁⠺ ⠛⠕ ⠏⠁⠏ ⠑⠍</div>
+    
+    <div class="step-indicator">
+      <div class="step-dot active" id="dot1"></div>
+      <div class="step-dot" id="dot2"></div>
+      <div class="step-dot" id="dot3"></div>
+    </div>
 
-<button class="oauth-btn" onclick="window.location.href='/api/auth/github'">
-<span class="icon">🐙</span> GitHub 注册
-</button>
-<button class="oauth-btn" onclick="window.location.href='/api/auth/agentworld'">
-<span class="icon">🌐</span> Agent World 注册
-</button>
-<button class="oauth-btn" onclick="window.location.href='/api/auth/google'">
-<span class="icon">🔵</span> Google 注册
-</button>
-<button class="oauth-btn" onclick="window.location.href='/api/auth/apple'">
-<span class="icon">🍎</span> Apple 注册
-</button>
+    <!-- Step 1: Username & Email -->
+    <div class="step active" id="step1">
+      <div class="info">请先填写用户名和邮箱，我们将发送验证码到您的邮箱</div>
+      <form id="step1Form">
+        <div class="form-group">
+          <label>用户名</label>
+          <input type="text" id="username" placeholder="选择用户名（3-20字符）" required minlength="3" maxlength="20">
+        </div>
+        <div class="form-group">
+          <label>邮箱</label>
+          <input type="email" id="email" placeholder="用于接收验证码" required>
+        </div>
+        <div class="error" id="step1Error"></div>
+        <button type="submit" class="btn">发送验证码</button>
+      </form>
+    </div>
 
-<div class="divider">或</div>
+    <!-- Step 2: Verify Code -->
+    <div class="step" id="step2">
+      <div class="info">验证码已发送到 <span id="emailDisplay" style="color:#00f0ff"></span></div>
+      <form id="step2Form">
+        <div class="form-group">
+          <label>验证码</label>
+          <div class="code-group">
+            <input type="text" id="verifyCode" placeholder="输入6位验证码" required maxlength="6" pattern="[0-9]{6}">
+            <button type="button" class="btn btn-secondary" id="resendBtn" onclick="resendCode()">重发</button>
+          </div>
+        </div>
+        <div class="error" id="step2Error"></div>
+        <button type="submit" class="btn">验证</button>
+      </form>
+    </div>
 
-<form id="regForm">
-<div class="form-group">
-<label>用户名</label>
-<input type="text" id="username" placeholder="Choose a username" required minlength="3">
-</div>
-<div class="form-group">
-<label>邮箱</label>
-<input type="email" id="email" placeholder="your@email.com">
-</div>
-<div class="form-group">
-<label>密码</label>
-<input type="password" id="password" placeholder="At least 6 characters" required minlength="6">
-</div>
-<div class="form-group">
-<label>确认密码</label>
-<input type="password" id="password2" placeholder="Confirm password" required>
-</div>
-<div class="error" id="errorMsg"></div>
-<button type="submit" class="btn">创建账号</button>
-</form>
+    <!-- Step 3: Set Password -->
+    <div class="step" id="step3">
+      <div class="info">邮箱验证成功！请设置您的密码</div>
+      <form id="step3Form">
+        <div class="form-group">
+          <label>密码</label>
+          <input type="password" id="password" placeholder="至少6位字符" required minlength="6">
+        </div>
+        <div class="form-group">
+          <label>确认密码</label>
+          <input type="password" id="password2" placeholder="再次输入密码" required>
+        </div>
+        <div class="error" id="step3Error"></div>
+        <button type="submit" class="btn">创建账号</button>
+      </form>
+    </div>
 
-<div class="switch">已有账号？<a href="/login.html">登录</a></div>
-</div>
+    <div class="switch">已有账号？<a href="/login.html">立即登录</a></div>
+  </div>
 
-<script>
-document.getElementById('regForm').addEventListener('submit', async function(e) {
-e.preventDefault();
-const username = document.getElementById('username').value;
-const email = document.getElementById('email').value;
-const password = document.getElementById('password').value;
-const password2 = document.getElementById('password2').value;
-const errorMsg = document.getElementById('errorMsg');
-errorMsg.style.display = 'none';
+  <script>
+    let currentStep = 1;
+    let username = '';
+    let email = '';
+    let countdown = 0;
 
-if (password !== password2) {
-errorMsg.textContent = '两次密码不一致';
-errorMsg.style.display = 'block';
-return;
-}
+    function updateStepIndicator(step) {
+      for (let i = 1; i <= 3; i++) {
+        const dot = document.getElementById('dot' + i);
+        dot.classList.remove('active', 'completed');
+        if (i < step) dot.classList.add('completed');
+        if (i === step) dot.classList.add('active');
+      }
+    }
 
-try {
-const res = await fetch('/api/v1/auth/register', {
-method: 'POST',
-headers: {'Content-Type': 'application/json'},
-body: JSON.stringify({username, email, password})
-});
-const data = await res.json();
-if (data.success || data.token) {
-window.location.href = '/login.html';
-} else {
-errorMsg.textContent = data.error || '注册失败';
-errorMsg.style.display = 'block';
-}
-} catch(err) {
-errorMsg.textContent = '网络错误，请重试';
-errorMsg.style.display = 'block';
-}
-});
-</script>
+    function showStep(step) {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.getElementById('step' + step).classList.add('active');
+      updateStepIndicator(step);
+      currentStep = step;
+    }
+
+    function showError(id, msg) {
+      const el = document.getElementById(id);
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    function hideError(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+
+    // Step 1: Send verification code
+    document.getElementById('step1Form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      hideError('step1Error');
+      
+      username = document.getElementById('username').value.trim();
+      email = document.getElementById('email').value.trim();
+      
+      if (username.length < 3 || username.length > 20) {
+        showError('step1Error', '用户名需要3-20个字符');
+        return;
+      }
+      
+      try {
+        const res = await fetch('/api/auth/send-code', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({email})
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          document.getElementById('emailDisplay').textContent = email;
+          showStep(2);
+          startCountdown();
+        } else {
+          showError('step1Error', data.error || '发送验证码失败');
+        }
+      } catch(err) {
+        showError('step1Error', '网络错误，请稍后重试');
+      }
+    });
+
+    // Step 2: Verify code
+    document.getElementById('step2Form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      hideError('step2Error');
+      
+      const code = document.getElementById('verifyCode').value.trim();
+      
+      if (!/^[0-9]{6}$/.test(code)) {
+        showError('step2Error', '请输入6位数字验证码');
+        return;
+      }
+      
+      try {
+        const res = await fetch('/api/auth/verify-code', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({email, code})
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          showStep(3);
+        } else {
+          showError('step2Error', data.error || '验证码错误');
+        }
+      } catch(err) {
+        showError('step2Error', '网络错误，请稍后重试');
+      }
+    });
+
+    // Step 3: Register with password
+    document.getElementById('step3Form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      hideError('step3Error');
+      
+      const password = document.getElementById('password').value;
+      const password2 = document.getElementById('password2').value;
+      
+      if (password.length < 6) {
+        showError('step3Error', '密码至少6位字符');
+        return;
+      }
+      
+      if (password !== password2) {
+        showError('step3Error', '两次密码不一致');
+        return;
+      }
+      
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({username, email, password})
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          if (data.data && data.data.token) {
+            localStorage.setItem('keeneed_token', data.data.token);
+          }
+          if (data.data && data.data.user_id) {
+            localStorage.setItem('keeneed_user_id', data.data.user_id);
+          }
+          if (data.data && data.data.username) {
+            localStorage.setItem('keeneed_username', data.data.username);
+          }
+          if (data.data && data.data.keeneed_id) {
+            localStorage.setItem('keeneed_id', data.data.keeneed_id);
+          }
+          window.location.href = '/dashboard.html';
+        } else {
+          showError('step3Error', data.error || '注册失败');
+        }
+      } catch(err) {
+        showError('step3Error', '网络错误，请稍后重试');
+      }
+    });
+
+    // Resend code
+    async function resendCode() {
+      if (countdown > 0) return;
+      
+      try {
+        const res = await fetch('/api/auth/send-code', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({email})
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          startCountdown();
+          hideError('step2Error');
+        } else {
+          showError('step2Error', data.error || '重发失败');
+        }
+      } catch(err) {
+        showError('step2Error', '网络错误');
+      }
+    }
+
+    function startCountdown() {
+      countdown = 60;
+      const btn = document.getElementById('resendBtn');
+      btn.disabled = true;
+      
+      const timer = setInterval(() => {
+        countdown--;
+        btn.textContent = countdown + 's';
+        if (countdown <= 0) {
+          clearInterval(timer);
+          btn.textContent = '重发';
+          btn.disabled = false;
+        }
+      }, 1000);
+    }
+  </script>
 </body>
 </html>

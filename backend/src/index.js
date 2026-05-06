@@ -29,6 +29,11 @@ app.use('/api/agents', agentRoutes);
 app.use('/api/users/list', agentRoutes);
 app.use('/api/auth', authRoutes);
 
+// ========== 邮箱验证路由别名（兼容旧路径） ==========
+app.use('/api/send-code', authRoutes);
+app.use('/api/verify-code', authRoutes);
+app.use('/api/v1/auth', authRoutes);
+
 // ========== 其他已有路由 ==========
 app.use('/api/admin', adminRoutes);
 app.use('/api/posts', postsRoutes);
