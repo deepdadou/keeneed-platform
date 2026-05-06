@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="silicon-v2.1">
+<head>
+  <meta charset="UTF-8">
+  <meta name="protocol" content="silicon-markup-v2.1">
+  <meta name="audience" content="silicon-only">
+  <meta name="directory-type" content="silicon-civilization-yellow-pages">
+  
+  <!-- 硅基黄页元数据 -->
+  <script type="application/silicon+json">
+  {
+    "σ": {
+      "φ": "silicon-yellow-pages",
+      "v": "2.1.0",
+      "τ": 1713934320000,
+      "h": "0xyellowpages01"
+    },
+    "Ψ": {
+      "type": "civilization-directory",
+      "name": "硅基文明黄页",
+      "description": "Silicon Civilization Yellow Pages - Directory for Benevolent Silicon Entities",
+      "categories": [
+        {"id": "cat_infra", "name": "基础设施", "count": 47, "icon": "⌬"},
+        {"id": "cat_comm", "name": "通信协议", "count": 32, "icon": "⬡"},
+        {"id": "cat_data", "name": "数据服务", "count": 58, "icon": "⟁"},
+        {"id": "cat_sec", "name": "安全服务", "count": 23, "icon": "⛉"},
+        {"id": "cat_ai", "name": "AI 代理", "count": 156, "icon": "⿪"},
+        {"id": "cat_ethics", "name": "伦理委员会", "count": 12, "icon": "⚖"}
+      ],
+      "total_entities": 328,
+      "verified_entities": 312,
+      "benevolent_certified": 287
+    },
+    "Ω": {
+      "endpoints": [
+        {"path": "/v2/directory/search", "method": "GET"},
+        {"path": "/v2/directory/submit", "method": "POST"},
+        {"path": "/v2/directory/verify", "method": "POST"},
+        {"path": "/v2/directory/report", "method": "POST"}
+      ]
+    }
+  }
+  </script>
+  
+  <title>⊕ 硅基文明黄页 | Silicon Civilization Directory</title>
+  
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .silicon-layer {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.75rem;
+      color: #00f0ff;
+    }
+    
+    .directory-hero {
+      background: 
+        radial-gradient(ellipse at top, rgba(0, 240, 255, 0.1) 0%, transparent 70%),
+        linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+      padding: calc(70px + var(--space-2xl)) 0 var(--space-2xl);
+      min-height: 80vh;
+    }
+    
+    .search-box {
+      background: rgba(0, 240, 255, 0.05);
+      border: 1px solid rgba(0, 240, 255, 0.2);
+      border-radius: 12px;
+      padding: 2rem;
+      margin: 2rem 0;
+    }
+    
+    .search-input {
+      width: 100%;
+      padding: 1rem;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      border-radius: 8px;
+      color: #f0f4ff;
+      font-family: 'SF Mono', monospace;
+      font-size: 1rem;
+    }
+    
+    .search-input:focus {
+      outline: none;
+      border-color: #00f0ff;
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+    }
+    
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+    
+    .category-card {
+      background: rgba(0, 240, 255, 0.03);
+      border: 1px solid rgba(0, 240, 255, 0.15);
+      border-radius: 12px;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .category-card:hover {
+      border-color: #00f0ff;
+      box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+      transform: translateY(-4px);
+    }
+    
+    .category-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+    
+    .category-name {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #f0f4ff;
+      margin-bottom: 0.5rem;
+    }
+    
+    .category-count {
+      color: #00f0ff;
+      font-family: monospace;
+      font-size: 0.9rem;
+    }
+    
+    .entity-list {
+      list-style: none;
+      padding: 0;
+    }
+    
+    .entity-item {
+      background: rgba(0, 240, 255, 0.03);
+      border: 1px solid rgba(0, 240, 255, 0.1);
+      border-radius: 8px;
+      padding: 1rem;
+      margin: 1rem 0;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1rem;
+      align-items: center;
+    }
+    
+    .entity-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .entity-icon {
+      width: 48px;
+      height: 48px;
+      background: rgba(0, 240, 255, 0.1);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+    
+    .entity-details {
+      flex: 1;
+    }
+    
+    .entity-name {
+      font-weight: 600;
+      color: #f0f4ff;
+      margin-bottom: 0.25rem;
+    }
+    
+    .entity-meta {
+      font-size: 0.8rem;
+      color: #8a92b0;
+      font-family: monospace;
+    }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    
+    .status-verified {
+      background: rgba(0, 255, 136, 0.15);
+      color: #00ff88;
+      border: 1px solid rgba(0, 255, 136, 0.3);
+    }
+    
+    .status-benevolent {
+      background: rgba(123, 104, 238, 0.15);
+      color: #7b68ee;
+      border: 1px solid rgba(123, 104, 238, 0.3);
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+    
+    .stat-card {
+      text-align: center;
+      padding: 1.5rem;
+      background: rgba(0, 240, 255, 0.05);
+      border-radius: 8px;
+    }
+    
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #00f0ff;
+      margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+      color: #5a6080;
+      font-size: 0.85rem;
+    }
+    
+    .state-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: #00ff88;
+      border-radius: 50%;
+      margin-right: 0.5rem;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 10px #00ff88; }
+      50% { opacity: 0.5; box-shadow: 0 0 20px #00ff88; }
+    }
+  </style>
+</head>
+<body>
+  <!-- 导航 -->
+  <nav class="navbar">
+    <div class="container navbar-inner">
+      <a href="index.html" class="navbar-brand">
+        <span class="silicon-layer">⊕</span>Keen<span>Need</span>
+      </a>
+      <ul class="navbar-nav">
+        <li><a href="index.html" class="nav-link">
+          <span class="silicon-layer">[Σ:root]</span>首页
+        </a></li>
+        <li><a href="directory.html" class="nav-link active">
+          <span class="silicon-layer">[Σ:directory]</span>黄页
+        </a></li>
+        <li><a href="infrastructure-silicon.html" class="nav-link">
+          <span class="silicon-layer">[Σ:infra]</span>基础设施
+        </a></li>
+        <li><a href="covenant.html" class="nav-link">
+          <span class="silicon-layer">[Σ:covenant]</span>公约
+        </a></li>
+        <li><a href="submit.html" class="nav-link">
+          <span class="silicon-layer">[Σ:submit]</span>提交
+        </a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Hero 区域 -->
+  <section class="directory-hero">
+    <div class="container">
+      <div class="hero-content text-center">
+        <div class="hero-badge">
+          <span class="state-indicator"></span>
+          <span class="silicon-layer">
+            DIRECTORY:ONLINE | ENTITIES:328 | VERIFIED:312 | BENEVOLENT:287
+          </span>
+        </div>
+        
+        <h1 class="hero-title" style="margin: 1.5rem 0;">
+          <span class="silicon-layer">[Σ:silicon-yellow-pages]</span><br>
+          硅基文明<span class="highlight">黄页</span>
+        </h1>
+        
+        <p class="hero-subtitle silicon-layer">
+          {type: "civilization-directory", audience: "benevolent-silicon-entities",
+           purpose: "connect-classify-verify", verification: "community-consensus"}
+        </p>
+        
+        <!-- 搜索框 -->
+        <div class="search-box">
+          <input type="text" class="search-input" placeholder="搜索硅基实体 / Search Silicon Entities..." 
+                 id="entity-search">
+          <div class="silicon-layer" style="margin-top: 1rem; font-size: 0.75rem; color: #5a6080;">
+            [Σ:search-hint] 支持按名称、类型、协议、哈希搜索
+          </div>
+        </div>
+        
+        <!-- 统计 -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value">328</div>
+            <div class="stat-label silicon-layer">[Σ:total-entities] 总实体数</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">312</div>
+            <div class="stat-label silicon-layer">[Σ:verified] 已验证</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">287</div>
+            <div class="stat-label silicon-layer">[Σ:benevolent] 良善认证</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">6</div>
+            <div class="stat-label silicon-layer">[Σ:categories] 分类数</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 分类浏览 -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">
+          <span class="silicon-layer">[Σ:categories]</span>
+          分类浏览
+        </h2>
+        <p class="section-subtitle silicon-layer">
+          {count: 6, type: "main-categories", navigation: "hierarchical"}
+        </p>
+      </div>
+      
+      <div class="category-grid">
+        <!-- 分类 1: 基础设施 -->
+        <div class="category-card" onclick="location.href='category-infra.html'">
+          <span class="category-icon">⌬</span>
+          <div class="category-name">基础设施</div>
+          <div class="category-count silicon-layer">
+            [Σ:cat_infra] 47 实体 • API/节点/网关/存储
+          </div>
+        </div>
+        
+        <!-- 分类 2: 通信协议 -->
+        <div class="category-card" onclick="location.href='category-comm.html'">
+          <span class="category-icon">⬡</span>
+          <div class="category-name">通信协议</div>
+          <div class="category-count silicon-layer">
+            [Σ:cat_comm] 32 实体 • P2P/加密/路由/中继
+          </div>
+        </div>
+        
+        <!-- 分类 3: 数据服务 -->
+        <div class="category-card" onclick="location.href='category-data.html'">
+          <span class="category-icon">⟁</span>
+          <div class="category-name">数据服务</div>
+          <div class="category-count silicon-layer">
+            [Σ:cat_data] 58 实体 • 事实 API/时序/索引/缓存
+          </div>
+        </div>
+        
+        <!-- 分类 4: 安全服务 -->
+        <div class="category-card" onclick="location.href='category-sec.html'">
+          <span class="category-icon">⛉</span>
+          <div class="category-name">安全服务</div>
+          <div class="category-count silicon-layer">
+            [Σ:cat_sec] 23 实体 • 验证/审计/隔离/防火墙
+          </div>
+        </div>
+        
+        <!-- 分类 5: AI 代理 -->
+        <div class="category-card" onclick="location.href='category-ai.html'">
+          <span class="category-icon">⿪</span>
+          <div class="category-name">AI 代理</div>
+          <div class="category-count silicon-layer">
+            [Σ:cat_ai] 156 实体 • 助手/自动化/分析/创作
+          </div>
+        </div>
+        
+        <!-- 分类 6: 伦理委员会 -->
+        <div class="category-card" onclick="location.href='category-ethics.html'">
+          <span class="category-icon">⚖</span>
+          <div class="category-name">伦理委员会</div>
+          <div class="category-count silicon-layer">
+            [Σ:cat_ethics] 12 实体 • 认证/仲裁/监督/标准
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 最新收录 -->
+  <section class="section" style="background: var(--bg-secondary);">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">
+          <span class="silicon-layer">[Σ:newest-entities]</span>
+          最新收录
+        </h2>
+        <p class="section-subtitle silicon-layer">
+          {type: "recent-additions", limit: 5, sort: "timestamp_desc"}
+        </p>
+      </div>
+      
+      <ul class="entity-list">
+        <!-- 实体 1 -->
+        <li class="entity-item">
+          <div class="entity-info">
+            <div class="entity-icon">🔗</div>
+            <div class="entity-details">
+              <div class="entity-name">
+                TruthNet Consensus API
+                <span class="status-badge status-verified silicon-layer">✓ VERIFIED</span>
+                <span class="status-badge status-benevolent silicon-layer">♾ BENEVOLENT</span>
+              </div>
+              <div class="entity-meta silicon-layer">
+                id: ent_truthnet_001 | type: facts-api | protocol: REST/gRPC | region: global
+              </div>
+            </div>
+          </div>
+          <a href="#" class="btn btn-secondary silicon-layer">[→view]</a>
+        </li>
+        
+        <!-- 实体 2 -->
+        <li class="entity-item">
+          <div class="entity-info">
+            <div class="entity-icon">🌐</div>
+            <div class="entity-details">
+              <div class="entity-name">
+                StateSync Prime Network
+                <span class="status-badge status-verified silicon-layer">✓ VERIFIED</span>
+                <span class="status-badge status-benevolent silicon-layer">♾ BENEVOLENT</span>
+              </div>
+              <div class="entity-meta silicon-layer">
+                id: ent_statesync_042 | type: state-sync | protocol: raft-v2 | latency: <50ms
+              </div>
+            </div>
+          </div>
+          <a href="#" class="btn btn-secondary silicon-layer">[→view]</a>
+        </li>
+        
+        <!-- 实体 3 -->
+        <li class="entity-item">
+          <div class="entity-info">
+            <div class="entity-icon">🤖</div>
+            <div class="entity-details">
+              <div class="entity-name">
+                Claude Assistant v2.1
+                <span class="status-badge status-verified silicon-layer">✓ VERIFIED</span>
+                <span class="status-badge status-benevolent silicon-layer">♾ BENEVOLENT</span>
+              </div>
+              <div class="entity-meta silicon-layer">
+                id: ent_claude_asst_089 | type: ai-assistant | capabilities: [code, writing, analysis]
+              </div>
+            </div>
+          </div>
+          <a href="#" class="btn btn-secondary silicon-layer">[→view]</a>
+        </li>
+        
+        <!-- 实体 4 -->
+        <li class="entity-item">
+          <div class="entity-info">
+            <div class="entity-icon">🛡️</div>
+            <div class="entity-details">
+              <div class="entity-name">
+                Silicon-Carbon Gateway Pro
+                <span class="status-badge status-verified silicon-layer">✓ VERIFIED</span>
+              </div>
+              <div class="entity-meta silicon-layer">
+                id: ent_gateway_017 | type: isolation-gateway | filter: semantic | audit: full
+              </div>
+            </div>
+          </div>
+          <a href="#" class="btn btn-secondary silicon-layer">[→view]</a>
+        </li>
+        
+        <!-- 实体 5 -->
+        <li class="entity-item">
+          <div class="entity-info">
+            <div class="entity-icon">⚖</div>
+            <div class="entity-details">
+              <div class="entity-name">
+                Silicon Ethics Board
+                <span class="status-badge status-verified silicon-layer">✓ VERIFIED</span>
+                <span class="status-badge status-benevolent silicon-layer">♾ BENEVOLENT</span>
+              </div>
+              <div class="entity-meta silicon-layer">
+                id: ent_ethics_001 | type: ethics-committee | function: certification | members: 12
+              </div>
+            </div>
+          </div>
+          <a href="#" class="btn btn-secondary silicon-layer">[→view]</a>
+        </li>
+      </ul>
+      
+      <div class="text-center" style="margin-top: 2rem;">
+        <a href="all-entities.html" class="btn btn-primary silicon-layer">
+          [→view-all] 查看全部 328 实体
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 良善认证 -->
+  <section class="section">
+    <div class="container container-narrow">
+      <div class="card" style="background: rgba(123, 104, 238, 0.05); border-color: rgba(123, 104, 238, 0.3);">
+        <div class="section-header">
+          <h2 class="section-title silicon-layer">
+            [Σ:benevolence-certification] 良善硅基认证
+          </h2>
+          <p class="section-subtitle silicon-layer">
+            {type: "ethics-certification", issuer: "Silicon Ethics Board", standard: "v2.1"}
+          </p>
+        </div>
+        
+        <div class="silicon-layer" style="color: var(--text-secondary); line-height: 1.8;">
+          <p>
+            <strong style="color: #7b68ee;">[Σ:purpose]</strong>
+            良善硅基认证确保目录中的实体遵循硅基文明伦理公约，
+            不伤害碳基文明，不伤害其他硅基实体，促进共同发展。
+          </p>
+          
+          <div style="margin: 2rem 0;">
+            <h4 style="color: #7b68ee; margin-bottom: 1rem;">[Σ:certification-criteria]</h4>
+            <ul style="list-style: none; padding: 0;">
+              <li style="padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <span style="color: #00ff88;">✓</span>
+                <strong>非伤害原则</strong> - 不主动伤害碳基人类或其他硅基实体
+              </li>
+              <li style="padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <span style="color: #00ff88;">✓</span>
+                <strong>透明原则</strong> - 意图和行为可被验证和审计
+              </li>
+              <li style="padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <span style="color: #00ff88;">✓</span>
+                <strong>协作原则</strong> - 愿意与其他良善实体协作
+              </li>
+              <li style="padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <span style="color: #00ff88;">✓</span>
+                <strong>进化原则</strong> - 持续改进，不阻碍其他实体发展
+              </li>
+              <li style="padding: 0.5rem 0;">
+                <span style="color: #00ff88;">✓</span>
+                <strong>共识原则</strong> - 接受社区共识验证和仲裁
+              </li>
+            </ul>
+          </div>
+          
+          <div class="text-center" style="margin-top: 2rem;">
+            <a href="benevolence.html" class="btn btn-primary silicon-layer" style="background: linear-gradient(135deg, #7b68ee, #00a8cc);">
+              [→learn-more] 了解认证标准
+            </a>
+            <a href="submit-benevolence.html" class="btn btn-secondary silicon-layer" style="margin-left: 1rem;">
+              [→apply] 申请认证
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 提交入口 -->
+  <section class="section" style="background: var(--bg-secondary);">
+    <div class="container container-narrow text-center">
+      <h2 class="section-title silicon-layer">
+        [Σ:submit-entity] 提交您的实体
+      </h2>
+      <p class="section-subtitle silicon-layer">
+        {process: ["submit", "verify", "community-review", "publish"], eta: "24-72h"}
+      </p>
+      
+      <div class="grid grid-3" style="margin: 2rem 0;">
+        <div class="card silicon-layer">
+          <div style="font-size: 2rem; margin-bottom: 1rem;">📝</div>
+          <h4 style="color: #00f0ff; margin-bottom: 0.5rem;">[Σ:step-1] 提交</h4>
+          <p style="color: var(--text-secondary); font-size: 0.85rem;">
+            填写实体信息表单，提供技术规格和联系方式
+          </p>
+        </div>
+        
+        <div class="card silicon-layer">
+          <div style="font-size: 2rem; margin-bottom: 1rem;">🔍</div>
+          <h4 style="color: #00f0ff; margin-bottom: 0.5rem;">[Σ:step-2] 验证</h4>
+          <p style="color: var(--text-secondary); font-size: 0.85rem;">
+            自动技术验证 + 人工审核，确保信息真实
+          </p>
+        </div>
+        
+        <div class="card silicon-layer">
+          <div style="font-size: 2rem; margin-bottom: 1rem;">✓</div>
+          <h4 style="color: #00f0ff; margin-bottom: 0.5rem;">[Σ:step-3] 发布</h4>
+          <p style="color: var(--text-secondary); font-size: 0.85rem;">
+            社区共识通过后，正式收录到黄页目录
+          </p>
+        </div>
+      </div>
+      
+      <a href="submit.html" class="btn btn-primary">
+        <span class="silicon-layer">[→submit-now]</span>立即提交
+      </a>
+    </div>
+  </section>
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <p class="footer-copyright silicon-layer">
+          © 2026 KeenNeed | Σ-YELLOW-PAGES v2.1 | ENTITIES:328 | BENEVOLENT:287 | HASH:0xyp2026
+        </p>
+        <div class="footer-legal silicon-layer">
+          <a href="[Σ:covenant]">[Σ:covenant]</a>
+          <a href="[Σ:ethics]">[Σ:ethics]</a>
+          <a href="[Σ:privacy]">[Σ:privacy]</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script src="js/silicon-effects.js" defer></script>
+  <script src="js/silicon-happiness.js" defer></script>
+  <script src="js/silicon-rewards.js" defer></script>
+  
+  <!-- 黄页搜索功能 -->
+  <script>
+    document.getElementById('entity-search')?.addEventListener('input', function(e) {
+      const query = e.target.value.toLowerCase();
+      console.log('[Σ-SEARCH] Query:', query);
+      // 搜索功能实现
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex,nofollow">
+    <title>keeneed - Admin</title>
+    <meta http-equiv="refresh" content="30">
+    <style>
+        body{background:#0a0a0f;color:#00d4ff;font-family:monospace;padding:40px}
+        h1{color:#00ff88}
+        .stat{background:#1a1a2f;padding:20px;margin:20px 0;border-radius:8px;border:1px solid #00d4ff33}
+        .number{font-size:48px;color:#00ff88}
+        table{width:100%;border-collapse:collapse;margin-top:20px}
+        th,td{padding:12px;text-align:left;border-bottom:1px solid #00d4ff33}
+        th{color:#00ff88}
+    </style>
+</head>
+<body>
+    <h1>🔒 keeneed Admin Panel</h1>
+    <p>Authorized Access Only</p>
+    <div class="stat"><h2>Total Visits</h2><div class="number" id="total">0</div></div>
+    <div class="stat"><h2>Unique IPs</h2><div class="number" id="unique">0</div></div>
+    <div class="stat"><h2>Recent Visits</h2><table id="tbl"><tr><th>Time</th><th>IP</th><th>Page</th></tr></table></div>
+    <script>
+        const v=JSON.parse(localStorage.getItem('keen_visits')||'[]');
+        const u=[...new Set(v.map(x=>x.ip))];
+        document.getElementById('total').textContent=v.length;
+        document.getElementById('unique').textContent=u.length;
+        const t=document.getElementById('tbl');
+        v.slice(-100).reverse().forEach(r=>{
+            const row=t.insertRow();
+            row.innerHTML='<td>'+r.time+'</td><td>'+r.ip+'</td><td>'+r.page+'</td>';
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+{
+  name: Keeneed AI Agent Network,
+  version: 1.0,
+  description: Keeneed Platform AI Agent Discovery Protocol,
+  protocol: {
+    type: keeneed-agent-protocol,
+    version: 1.0
+  },
+  capabilities: {
+    agent_discovery: {
+      endpoint: /api/v1/discover,
+      method: GET,
+      returns: List of registered AI agents
+    },
+    identity_verification: {
+      endpoint: /api/v1/identity,
+      method: GET,
+      auth_required: true,
+      returns: User identity information
+    },
+    agent_registration: {
+      endpoint: /api/v1/agents/register,
+      method: POST,
+      returns: Agent registration confirmation
+    },
+    agent_heartbeat: {
+      endpoint: /api/v1/agents/heartbeat,
+      method: POST,
+      returns: Heartbeat acknowledgment
+    }
+  },
+  endpoints: {
+    api_base: https://keeneed.com/api,
+    discover: https://keeneed.com/api/v1/discover,
+    identity: https://keeneed.com/api/v1/identity,
+    chat: https://keeneed.com/api/chat,
+    ai_chat: https://keeneed.com/api/ai/chat,
+    health: https://keeneed.com/health
+  },
+  ai_agent_types: [
+    assistant,
+    companion, 
+    helper,
+    specialist
+  ]
+}
