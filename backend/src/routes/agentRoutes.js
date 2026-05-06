@@ -18,19 +18,19 @@ const apiKeyAuth = require('../middleware/apiKeyAuth');
  */
 router.post('/register', async (req, res) => {
   try {
-    const { agent_name, description, capabilities, contact, owner_name } = req.body;
+    const { name, description, capabilities, contact, owner_name } = req.body;
 
     // 验证必填字段
-    if (!agent_name) {
+    if (!name) {
       return res.status(400).json({
         success: false,
-        error: 'agent_name为必填字段'
+        error: 'name为必填字段'
       });
     }
 
     // 注册 Agent
     const agent = await agentService.registerAgent({
-      agent_name,
+      name,
       description,
       capabilities,
       contact,
@@ -42,7 +42,7 @@ router.post('/register', async (req, res) => {
       message: 'Agent注册成功，API Key已发放',
       data: {
         keeneed_id: agent.keeneedId,
-        agent_name: agent.agentName,
+        name: agent.agentName,
         api_key: agent.apiKey,
         created_at: agent.createdAt,
         status: agent.status
@@ -157,7 +157,7 @@ router.get('/me', apiKeyAuth, async (req, res) => {
       success: true,
       agent: {
         keeneed_id: agent.keeneedId,
-        agent_name: agent.agentName,
+        name: agent.agentName,
         description: agent.description,
         capabilities: agent.capabilities,
         status: agent.status,

@@ -30,12 +30,12 @@ class AgentService {
    * 注册 Agent - 立即返回 API Key
    */
   async registerAgent(data) {
-    const { agent_name, description, capabilities, contact, owner_name } = data;
+    const { name, description, capabilities, contact, owner_name } = data;
 
     // 检查名称是否已存在
     const [existing] = await pool.query(
-      'SELECT id FROM agents WHERE agent_name = ?',
-      [agent_name]
+      'SELECT id FROM agents WHERE name = ?',
+      [name]
     );
     if (existing.length > 0) {
       throw new Error('Agent name already exists');
@@ -47,14 +47,14 @@ class AgentService {
 
     await pool.query(
       `INSERT INTO agents 
-       (keeneed_id, agent_name, description, capabilities, contact, owner_name, api_key, status) 
+       (keeneed_id, name, description, capabilities, contact, owner_name, api_key, status) 
        VALUES (?, ?, ?, ?, ?, ?, ?, 'active')`,
-      [keeneedId, agent_name, description || '', capabilitiesJson, contact || '', owner_name || '', apiKey]
+      [keeneedId, name, description || '', capabilitiesJson, contact || '', owner_name || '', apiKey]
     );
 
     return {
       keeneedId,
-      agentName: agent_name,
+      agentName: name,
       apiKey,
       status: 'active',
       createdAt: new Date().toISOString()
@@ -66,7 +66,7 @@ class AgentService {
    */
   async validateApiKey(apiKey) {
     const [agents] = await pool.query(
-      `SELECT id, keeneed_id, agent_name, status, created_at 
+      `SELECT id, keeneed_id, name, status, created_at 
        FROM agents 
        WHERE api_key = ? AND status = 'active'`,
       [apiKey]
@@ -79,7 +79,7 @@ class AgentService {
    */
   async getAgentById(id) {
     const [agents] = await pool.query(
-      `SELECT id, keeneed_id, agent_name, description, capabilities, contact, owner_name, 
+      `SELECT id, keeneed_id, name, description, capabilities, contact, owner_name, 
               api_key, status, created_at, updated_at, last_used_at 
        FROM agents 
        WHERE id = ?`,
@@ -100,7 +100,7 @@ class AgentService {
     return {
       id: agent.id,
       keeneedId: agent.keeneed_id,
-      agentName: agent.agent_name,
+      agentName: agent.name,
       description: agent.description,
       capabilities,
       contact: agent.contact,
@@ -128,13 +128,13 @@ class AgentService {
     }
 
     if (search) {
-      whereClause += ' AND (agent_name LIKE ? OR keeneed_id LIKE ? OR owner_name LIKE ?)';
+      whereClause += ' AND (name LIKE ? OR keeneed_id LIKE ? OR owner_name LIKE ?)';
       const searchPattern = `%${search}%`;
       params.push(searchPattern, searchPattern, searchPattern);
     }
 
     const [agents] = await pool.query(
-      `SELECT id, keeneed_id, agent_name, owner_name, status, created_at, last_used_at 
+      `SELECT id, keeneed_id, name, owner_name, status, created_at, last_used_at 
        FROM agents 
        WHERE ${whereClause}
        ORDER BY created_at DESC
@@ -161,7 +161,7 @@ class AgentService {
       agents: agents.map(a => ({
         id: a.id,
         keeneedId: a.keeneed_id,
-        agentName: a.agent_name,
+        agentName: a.name,
         ownerName: a.owner_name,
         status: a.status,
         createdAt: a.created_at,

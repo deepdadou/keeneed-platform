@@ -26,7 +26,7 @@ async function apiKeyAuth(req, res, next) {
 
     // 查询 agents 表验证 Key
     const [agents] = await pool.query(
-      `SELECT id, keeneed_id, agent_name, api_key, status, created_at 
+      `SELECT id, keeneed_id, name, api_key, status, created_at 
        FROM agents 
        WHERE api_key = ?`,
       [apiKey]
@@ -66,7 +66,7 @@ async function apiKeyAuth(req, res, next) {
     req.agent = {
       id: agent.id,
       keeneedId: agent.keeneed_id,
-      name: agent.agent_name,
+      name: agent.name,
       status: agent.status,
       createdAt: agent.created_at
     };
