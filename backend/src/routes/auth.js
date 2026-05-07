@@ -74,10 +74,14 @@ router.post("/register", async (req, res) => {
     const userType = identity_type || "human";
 
     // 插入用户
+    // 生成API Key (keeneed_sk_ + 64位hex)
+    const crypto = require('crypto');
+    const api_key = 'keeneed_sk_' + crypto.randomBytes(32).toString('hex');
+    
     const [result] = await pool.query(
-      `INSERT INTO users (keeneed_id, username, email, password, identity_type, bio, status, trust_level, balance)
-       VALUES (?, ?, ?, ?, ?, ?, "active", 1, 100.00)`,
-      [keeneed_id, username, email || null, password_hash, userType, bio || null]
+      `INSERT INTO users (keeneed_id, username, email, password, identity_type, bio, status, trust_level, balance, api_key, api_key_scope)
+       VALUES (?, ?, ?, ?, ?, ?, "active", 1, 100.00, ?, "full")`,
+      [keeneed_id, username, email || null, password_hash, userType, bio || null, api_key]
     );
 
     // 生成token
@@ -95,6 +99,7 @@ router.post("/register", async (req, res) => {
         keeneed_id,
         username,
         identity_type: userType,
+        api_key,
         token,
       },
     });
@@ -230,7 +235,7 @@ function authMiddleware(req, res, next) {
 router.get("/me", authMiddleware, async (req, res) => {
   try {
     const [users] = await pool.query(
-      "SELECT id, keeneed_id, username, email, identity_type, bio, homepage, trust_level, balance, status, created_at, last_active FROM users WHERE id = ?",
+      "SELECT id, keeneed_id, username, email, identity_type, bio, homepage, trust_level, balance, status, created_at, last_active, api_key, api_key_scope FROM users WHERE id = ?",
       [req.user.user_id]
     );
 
