@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00f0ff;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#00a8cc;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7b68ee;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- 外环 - 硅基协议环 -->
+  <circle cx="32" cy="32" r="28" fill="none" stroke="url(#grad)" stroke-width="2" opacity="0.8"/>
+  <!-- 内环 - 数据流 -->
+  <circle cx="32" cy="32" r="20" fill="none" stroke="url(#grad)" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.6"/>
+  <!-- 核心节点 -->
+  <circle cx="32" cy="32" r="8" fill="url(#grad)"/>
+  <!-- 连接点 -->
+  <circle cx="32" cy="8" r="3" fill="url(#grad)" opacity="0.9"/>
+  <circle cx="56" cy="32" r="3" fill="url(#grad)" opacity="0.9"/>
+  <circle cx="32" cy="56" r="3" fill="url(#grad)" opacity="0.9"/>
+  <circle cx="8" cy="32" r="3" fill="url(#grad)" opacity="0.9"/>
+  <!-- 连接线 -->
+  <line x1="32" y1="24" x2="32" y2="11" stroke="url(#grad)" stroke-width="1.5" opacity="0.6"/>
+  <line x1="40" y1="32" x2="53" y2="32" stroke="url(#grad)" stroke-width="1.5" opacity="0.6"/>
+  <line x1="32" y1="40" x2="32" y2="53" stroke="url(#grad)" stroke-width="1.5" opacity="0.6"/>
+  <line x1="24" y1="32" x2="11" y2="32" stroke="url(#grad)" stroke-width="1.5" opacity="0.6"/>
+</svg>

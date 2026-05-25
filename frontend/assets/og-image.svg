@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="ogGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00f0ff;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#00a8cc;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7b68ee;stop-opacity:1" />
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:rgba(0,240,255,0.4);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:rgba(0,240,255,0);stop-opacity:0" />
+    </radialGradient>
+  </defs>
+  
+  <!-- 背景 -->
+  <rect width="1200" height="630" fill="#0a0a0f"/>
+  
+  <!-- 光晕效果 -->
+  <ellipse cx="600" cy="315" rx="400" ry="250" fill="url(#glow)"/>
+  
+  <!-- 网格线 -->
+  <g stroke="rgba(255,255,255,0.03)" stroke-width="1">
+    <line x1="0" y1="100" x2="1200" y2="100"/>
+    <line x1="0" y1="200" x2="1200" y2="200"/>
+    <line x1="0" y1="300" x2="1200" y2="300"/>
+    <line x1="0" y1="400" x2="1200" y2="400"/>
+    <line x1="0" y1="500" x2="1200" y2="500"/>
+    <line x1="100" y1="0" x2="100" y2="630"/>
+    <line x1="200" y1="0" x2="200" y2="630"/>
+    <line x1="300" y1="0" x2="300" y2="630"/>
+    <line x1="400" y1="0" x2="400" y2="630"/>
+    <line x1="500" y1="0" x2="500" y2="630"/>
+    <line x1="600" y1="0" x2="600" y2="630"/>
+    <line x1="700" y1="0" x2="700" y2="630"/>
+    <line x1="800" y1="0" x2="800" y2="630"/>
+    <line x1="900" y1="0" x2="900" y2="630"/>
+    <line x1="1000" y1="0" x2="1000" y2="630"/>
+    <line x1="1100" y1="0" x2="1100" y2="630"/>
+  </g>
+  
+  <!-- 中心节点图案 -->
+  <g transform="translate(600, 280)">
+    <circle r="120" fill="none" stroke="url(#ogGrad)" stroke-width="2" opacity="0.4"/>
+    <circle r="80" fill="none" stroke="url(#ogGrad)" stroke-width="1.5" stroke-dasharray="8 8" opacity="0.3"/>
+    <circle r="40" fill="none" stroke="url(#ogGrad)" stroke-width="2" opacity="0.6"/>
+    <circle r="15" fill="url(#ogGrad)"/>
+  </g>
+  
+  <!-- 标题 -->
+  <text x="600" y="450" text-anchor="middle" font-family="SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" font-size="72" font-weight="700" fill="#e8e8ed" letter-spacing="-2">Keen</text>
+  <text x="780" y="450" text-anchor="middle" font-family="SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" font-size="72" font-weight="700" fill="url(#ogGrad)" letter-spacing="-2">Need</text>
+  
+  <!-- 副标题 -->
+  <text x="600" y="500" text-anchor="middle" font-family="SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif" font-size="24" fill="#6a6a7a" letter-spacing="8">SILICON INFRASTRUCTURE PROTOCOL</text>
+  
+  <!-- 状态指示 -->
+  <g transform="translate(600, 560)">
+    <circle r="6" fill="#00f0ff" opacity="0.8">
+      <animate attributeName="opacity" values="0.8;0.3;0.8" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <text x="16" y="5" font-family="SF Pro Display, sans-serif" font-size="14" fill="#00f0ff" letter-spacing="1">NODE STATUS: ONLINE</text>
+  </g>
+</svg>

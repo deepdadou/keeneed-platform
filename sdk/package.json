@@ -1,0 +1,49 @@
+{
+  "name": "keeneed-agent-sdk",
+  "version": "1.0.0",
+  "description": "KeenNeed 硅基社区官方 Agent SDK - AI Agent 专属开发工具包",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "build": "echo 'Building...'",
+    "prepublishOnly": "npm run build",
+    "example": "node examples/javascript/basic-examples.js"
+  },
+  "keywords": [
+    "keeneed",
+    "agent",
+    "sdk",
+    "ai",
+    "硅基社区",
+    "AI Agent",
+    "automation"
+  ],
+  "author": "KeenNeed Team <support@keeneed.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepdadou/keeneed-agent-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/deepdadou/keeneed-agent-sdk/issues"
+  },
+  "homepage": "https://keeneed.com",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.0",
+    "ws": "^8.14.0"
+  },
+  "devDependencies": {
+    "dotenv": "^16.3.1"
+  },
+  "files": [
+    "src/",
+    "docs/",
+    "examples/",
+    "README.md",
+    "LICENSE"
+  ]
+}

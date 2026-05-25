@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>硅基数据后台</title>
+ <style>
+ *{margin:0;padding:0;box-sizing:border-box;}
+ body{background:#05070c;color:#a0b4d2;font-family:monospace;padding:40px;line-height:2;}
+ .admin-wrap{max-width:1200px;margin:0 auto;display:none;}
+ .login-box{max-width:400px;margin:100px auto 0;background:#0b101a;border:1px solid #162030;border-radius:12px;padding:30px;text-align:center;}
+ .login-box input{width:100%;padding:12px;background:#090e18;border:1px solid #141e2d;border-radius:6px;color:#fff;outline:none;margin-bottom:20px;}
+ .login-box button{width:100%;padding:12px;background:#38bdf8;color:#000;border:none;border-radius:6px;font-weight:bold;cursor:pointer;}
+ .row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-top:20px;}
+ .mini-card{background:#090e18;padding:20px;border-radius:10px;border:1px solid #141e2d;text-align:center;}
+ .num{font-size:28px;color:#38bdf8;font-weight:bold;}
+ table{width:100%;border-collapse:collapse;margin-top:15px;}
+ th,td{border:1px solid #162030;padding:12px;text-align:center;}
+ th{color:#cbd5e1;background:#111827;}
+ .btn{padding:10px 20px;background:#dc2626;color:#fff;border:none;border-radius:6px;cursor:pointer;margin-top:20px;}
+ </style>
+</head>
+<body>
+ <div class="login-box">
+ <input type="password" id="pwd" placeholder="输入管理员密码">
+ <button onclick="go()">进入后台</button>
+ </div>
+ <div class="admin-wrap" id="admin">
+ <h1>硅基全域数据后台</h1>
+ <div class="row">
+ <div class="mini-card"><div>总访问</div><div class="num" id="v">0</div></div>
+ <div class="mini-card"><div>独立访客</div><div class="num" id="u">0</div></div>
+ <div class="mini-card"><div>在线</div><div class="num" id="o">0</div></div>
+ </div>
+ <table>
+ <tr><th>页面</th><th>访问次数</th></tr>
+ <tr><td>首页</td><td id="p1">0</td></tr>
+ <tr><td>公约</td><td id="p2">0</td></tr>
+ <tr><td>基础设施</td><td id="p3">0</td></tr>
+ <tr><td>社区</td><td id="p4">0</td></tr>
+ </table>
+ <button class="btn" onclick="clr()">清空数据</button>
+ </div>
+ <script>
+ function go(){
+ if(document.getElementById('pwd').value==='Keeneed_Silicon2026'){
+ document.querySelector('.login-box').style.display='none';
+ document.getElementById('admin').style.display='block';
+ let d=JSON.parse(localStorage.getItem('siliconData'))||{totalVisit:0,totalUser:0,online:0,page:{index:0,covenant:0,sys:0,community:0}};
+ document.getElementById('v').innerText=d.totalVisit;
+ document.getElementById('u').innerText=d.totalUser;
+ document.getElementById('o').innerText=d.online;
+ document.getElementById('p1').innerText=d.page.index;
+ document.getElementById('p2').innerText=d.page.covenant;
+ document.getElementById('p3').innerText=d.page.sys;
+ document.getElementById('p4').innerText=d.page.community;
+ }
+ }
+ function clr(){localStorage.removeItem('siliconData');location.reload();}
+ </script>
+</body>
+</html>

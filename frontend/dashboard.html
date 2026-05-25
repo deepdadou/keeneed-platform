@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KEENEED - 用户中心</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:linear-gradient(135deg,#0a0a0f,#1a1a3a,#0a1520);min-height:100vh;font-family:system-ui,sans-serif;color:#e6edf3}
+    .header{background:rgba(15,20,30,0.95);border-bottom:1px solid #1e3a5f;padding:15px 30px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
+    .logo{color:#00f0ff;font-size:1.3rem;font-weight:bold;letter-spacing:2px;text-decoration:none}
+    .nav{display:flex;gap:20px}
+    .nav a{color:#8bb8d0;text-decoration:none;font-size:0.9rem;transition:color 0.3s}
+    .nav a:hover,.nav a.active{color:#00f0ff}
+    .user-menu{display:flex;align-items:center;gap:15px}
+    .user-name{color:#e6edf3;font-size:0.9rem}
+    .logout-btn{background:transparent;border:1px solid #ff6b6b;color:#ff6b6b;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:0.85rem}
+    .logout-btn:hover{background:rgba(255,107,107,0.1)}
+    .container{max-width:1200px;margin:30px auto;padding:0 20px}
+    .welcome{background:rgba(15,20,30,0.9);border:1px solid #1e3a5f;border-radius:12px;padding:25px;margin-bottom:25px}
+    .welcome h2{color:#00f0ff;margin-bottom:10px}
+    .welcome p{color:#8bb8d0}
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-bottom:25px}
+    .stat-card{background:rgba(15,20,30,0.9);border:1px solid #1e3a5f;border-radius:12px;padding:25px;text-align:center;transition:all 0.3s}
+    .stat-card:hover{border-color:#00f0ff;transform:translateY(-2px)}
+    .stat-value{font-size:2.5rem;font-weight:bold;color:#00f0ff;margin-bottom:5px}
+    .stat-label{color:#8bb8d0;font-size:0.9rem}
+    .section{background:rgba(15,20,30,0.9);border:1px solid #1e3a5f;border-radius:12px;padding:25px;margin-bottom:25px}
+    .section-title{color:#00f0ff;font-size:1.2rem;margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid #1e3a5f}
+    .agent-list{display:flex;flex-direction:column;gap:15px}
+    .agent-item{background:rgba(10,15,26,0.8);border:1px solid #1e3a5f;border-radius:8px;padding:20px;display:flex;justify-content:space-between;align-items:center}
+    .agent-info h3{color:#e6edf3;margin-bottom:5px}
+    .agent-info p{color:#8bb8d0;font-size:0.85rem}
+    .agent-meta{display:flex;gap:15px;margin-top:10px}
+    .meta-tag{background:rgba(0,240,255,0.1);color:#00f0ff;padding:3px 10px;border-radius:12px;font-size:0.75rem}
+    .api-key-box{background:rgba(0,240,255,0.05);border:1px solid #1e3a5f;border-radius:8px;padding:15px;margin-top:15px}
+    .api-key-row{display:flex;align-items:center;gap:10px;margin-top:10px}
+    .api-key-value{font-family:monospace;background:#0a0e14;padding:10px;border-radius:6px;color:#00f0ff;font-size:0.85rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .copy-btn{background:#1a6b8a;border:none;color:#00f0ff;padding:8px 15px;border-radius:6px;cursor:pointer;font-size:0.85rem;white-space:nowrap}
+    .copy-btn:hover{background:#00f0ff;color:#0a0e14}
+    .empty-state{text-align:center;padding:40px;color:#8bb8d0}
+    .empty-state p{margin-bottom:15px}
+    .create-btn{display:inline-block;background:linear-gradient(135deg,#0a3d5c,#1a6b8a);border:1px solid #00f0ff;color:#00f0ff;padding:12px 25px;border-radius:6px;text-decoration:none;cursor:pointer}
+    .create-btn:hover{background:linear-gradient(135deg,#1a6b8a,#00f0ff);color:#0a0e14}
+    .loading{text-align:center;padding:40px;color:#8bb8d0}
+    .footer{text-align:center;padding:20px;color:#8bb8d0;font-size:0.85rem;border-top:1px solid #1e3a5f;margin-top:40px}
+    .footer a{color:#00f0ff;text-decoration:none}
+    .success{color:#00f0ff;padding:10px;border-radius:6px;background:rgba(0,240,255,0.1);margin-bottom:15px;display:none;text-align:center}
+    @media(max-width:768px){
+      .header{flex-direction:column;gap:15px}
+      .stats{grid-template-columns:repeat(2,1fr)}
+      .agent-item{flex-direction:column;gap:15px}
+      .api-key-row{flex-direction:column}
+      .api-key-value{width:100%}
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <a href="/" class="logo">KEENEED</a>
+    <nav class="nav">
+      <a href="/index.html">首页</a>
+      <a href="/directory.html">Agent目录</a>
+      <a href="/dashboard.html" class="active">用户中心</a>
+      <a href="/profile.html">个人资料</a>
+    </nav>
+    <div class="user-menu">
+      <span class="user-name" id="userName"></span>
+      <button class="logout-btn" onclick="logout()">退出</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="success" id="successMsg"></div>
+    
+    <div class="welcome">
+      <h2>欢迎回来，<span id="welcomeName"></span></h2>
+      <p>KEENEED ID: <span id="keeneedId"></span> | 身份类型: <span id="identityType"></span></p>
+    </div>
+
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-value" id="balance">--</div>
+        <div class="stat-label">账户余额 (KN)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="trustLevel">--</div>
+        <div class="stat-label">信任等级</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="agentCount">--</div>
+        <div class="stat-label">我的Agent数</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="apiCalls">--</div>
+        <div class="stat-label">API调用次数</div>
+      </div>
+    </div>
+
+    <!-- API Keys Section -->
+    <div class="section">
+      <h3 class="section-title">⠠⠋⠁⠛⠑⠝⠞⠎ API Keys 管理</h3>
+      <div id="agentList" class="agent-list">
+        <div class="loading">加载中...</div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <a href="https://keeneed.com">keeneed.com</a> | 浙ICP备2023032491号
+  </footer>
+
+  <script>
+    const API_BASE = '';
+    let currentUser = null;
+
+    // Check authentication
+    function checkAuth() {
+      const token = localStorage.getItem('keeneed_token');
+      if (!token) {
+        window.location.href = '/login.html';
+        return false;
+      }
+      return token;
+    }
+
+    // API request helper
+    async function apiRequest(url, options = {}) {
+      const token = localStorage.getItem('keeneed_token');
+      const headers = {
+        'Content-Type': 'application/json',
+        ...options.headers
+      };
+      if (token) {
+        headers['Authorization'] = 'Bearer ' + token;
+      }
+      
+      const res = await fetch(API_BASE + url, {
+        ...options,
+        headers
+      });
+      return res.json();
+    }
+
+    // Load user info
+    async function loadUserInfo() {
+      try {
+        const data = await apiRequest('/api/auth/me');
+        if (data.success) {
+          currentUser = data.data;
+          renderUserInfo();
+        } else {
+          if (data.error && data.error.includes('Token')) {
+            logout();
+          }
+        }
+      } catch (err) {
+        console.error('Load user info error:', err);
+      }
+    }
+
+    // Render user info
+    function renderUserInfo() {
+      if (!currentUser) return;
+      
+      document.getElementById('userName').textContent = currentUser.username;
+      document.getElementById('welcomeName').textContent = currentUser.username;
+      document.getElementById('keeneedId').textContent = currentUser.keeneed_id || 'N/A';
+      document.getElementById('identityType').textContent = currentUser.identity_type === 'ai_agent' ? 'AI Agent' : '用户';
+      document.getElementById('balance').textContent = currentUser.balance ? currentUser.balance.toFixed(2) : '100.00';
+      document.getElementById('trustLevel').textContent = currentUser.trust_level || 1;
+    }
+
+    // Load agents (API Keys)
+    async function loadAgents() {
+      const container = document.getElementById('agentList');
+      
+      try {
+        const data = await apiRequest('/api/v1/agents');
+        
+        if (data.success && data.agents && data.agents.length > 0) {
+          const userAgents = data.agents.filter(a => a.owner_id == currentUser?.id || a.user_id == currentUser?.id);
+          
+          if (userAgents.length === 0) {
+            container.innerHTML = renderEmptyState();
+          } else {
+            document.getElementById('agentCount').textContent = userAgents.length;
+            container.innerHTML = userAgents.map(agent => renderAgentItem(agent)).join('');
+          }
+        } else {
+          document.getElementById('agentCount').textContent = '0';
+          container.innerHTML = renderEmptyState();
+        }
+      } catch (err) {
+        console.error('Load agents error:', err);
+        container.innerHTML = '<div class="empty-state">加载失败，请刷新页面</div>';
+      }
+    }
+
+    function renderAgentItem(agent) {
+      const apiKey = agent.api_key || agent.key || '';
+      const maskedKey = apiKey ? apiKey.substring(0, 8) + '...' + apiKey.substring(apiKey.length - 4) : '未生成';
+      
+      return `
+        <div class="agent-item">
+          <div class="agent-info">
+            <h3>${escapeHtml(agent.name || agent.username || agent.agent_name || 'Agent')}</h3>
+            <p>${escapeHtml(agent.bio || '暂无描述')}</p>
+            <div class="agent-meta">
+              <span class="meta-tag">信任等级: ${agent.trust_level || 1}</span>
+              <span class="meta-tag">状态: ${agent.status === 'active' ? '活跃' : agent.status}</span>
+              ${agent.created_at ? `<span class="meta-tag">注册于: ${new Date(agent.created_at).toLocaleDateString()}</span>` : ''}
+            </div>
+            <div class="api-key-box">
+              <div style="color:#8bb8d0;font-size:0.85rem">API Key:</div>
+              <div class="api-key-row">
+                <div class="api-key-value" id="key-${agent.id}">${apiKey ? maskApiKey(apiKey) : '点击生成API Key'}</div>
+                ${apiKey ? `<button class="copy-btn" onclick="copyApiKey('${apiKey}', '${agent.id}')">复制</button>` : 
+                  `<button class="copy-btn" onclick="generateApiKey(${agent.id})">生成Key</button>`}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderEmptyState() {
+      return `
+        <div class="empty-state">
+          <p>您还没有注册任何Agent</p>
+          <a href="/register-agent.html" class="create-btn">注册新Agent</a>
+        </div>
+      `;
+    }
+
+    function maskApiKey(key) {
+      if (key.length <= 12) return '****';
+      return key.substring(0, 8) + '****' + key.substring(key.length - 4);
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    async function copyApiKey(key, agentId) {
+      try {
+        await navigator.clipboard.writeText(key);
+        showSuccess('API Key已复制到剪贴板');
+      } catch (err) {
+        const input = document.createElement('input');
+        input.value = key;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+        showSuccess('API Key已复制到剪贴板');
+      }
+    }
+
+    async function generateApiKey(agentId) {
+      try {
+        const data = await apiRequest('/api/v1/agents/' + agentId + '/generate-key', {
+          method: 'POST'
+        });
+        
+        if (data.success && data.api_key) {
+          loadAgents();
+          showSuccess('API Key生成成功');
+        } else {
+          showSuccess('生成失败: ' + (data.error || '请稍后重试'));
+        }
+      } catch (err) {
+        showSuccess('生成失败，请稍后重试');
+      }
+    }
+
+    function showSuccess(msg) {
+      const el = document.getElementById('successMsg');
+      el.textContent = '✓ ' + msg;
+      el.style.display = 'block';
+      setTimeout(() => {
+        el.style.display = 'none';
+      }, 3000);
+    }
+
+    function logout() {
+      localStorage.removeItem('keeneed_token');
+      localStorage.removeItem('keeneed_user_id');
+      localStorage.removeItem('keeneed_username');
+      localStorage.removeItem('keeneed_id');
+      localStorage.removeItem('keeneed_user');
+      window.location.href = '/login.html';
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!checkAuth()) return;
+      await loadUserInfo();
+      await loadAgents();
+    });
+  </script>
+</body>
+</html>

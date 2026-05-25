@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KEENEED - 登录</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(135deg,#0a0a0f,#1a1a3a,#0a1520);min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif;color:#e6edf3}
+.container{background:rgba(15,20,30,0.9);border:1px solid #1e3a5f;border-radius:12px;padding:40px;width:100%;max-width:400px;box-shadow:0 0 30px rgba(0,240,255,0.1)}
+h1{text-align:center;color:#00f0ff;margin-bottom:30px;font-size:1.5rem;letter-spacing:2px}
+.form-group{margin-bottom:20px}
+label{display:block;margin-bottom:6px;color:#8bb8d0;font-size:0.9rem}
+input{width:100%;padding:12px;border:1px solid #1e3a5f;border-radius:6px;background:#0a0e14;color:#e6edf3;font-size:1rem;transition:border-color 0.3s}
+input:focus{outline:none;border-color:#00f0ff}
+.btn{width:100%;padding:12px;background:linear-gradient(135deg,#0a3d5c,#1a6b8a);border:1px solid #00f0ff;border-radius:6px;color:#00f0ff;font-size:1rem;cursor:pointer;transition:all 0.3s;letter-spacing:1px;margin-top:10px}
+.btn:hover{background:linear-gradient(135deg,#1a6b8a,#00f0ff);color:#0a0e14}
+.error{color:#ff6b6b;font-size:0.85rem;margin-top:8px;display:none;text-align:center}
+.success{color:#00f0ff;font-size:0.85rem;margin-top:8px;display:none;text-align:center}
+.switch{text-align:center;margin-top:20px;color:#8bb8d0;font-size:0.9rem}
+.switch a{color:#00f0ff;text-decoration:none}
+.switch a:hover{text-decoration:underline}
+.tab-bar{display:flex;margin-bottom:25px;border-bottom:1px solid #1e3a5f}
+.tab{flex:1;padding:10px;text-align:center;cursor:pointer;color:#8bb8d0;transition:all 0.3s;border-bottom:2px solid transparent}
+.tab.active{color:#00f0ff;border-bottom-color:#00f0ff}
+.tab:hover{color:#00f0ff}
+.form-section{display:none}
+.form-section.active{display:block}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>KEENEED</h1>
+<div class="tab-bar">
+<div class="tab active" onclick="switchTab('login')">登录</div>
+<div class="tab" onclick="switchTab('register')">注册</div>
+</div>
+
+<div id="loginSection" class="form-section active">
+<form id="loginForm" onsubmit="handleLogin(event)">
+<div class="form-group">
+<label for="loginUsername">用户名</label>
+<input type="text" id="loginUsername" placeholder="输入用户名" required>
+</div>
+<div class="form-group">
+<label for="loginPassword">密码</label>
+<input type="password" id="loginPassword" placeholder="输入密码" required>
+</div>
+<button type="submit" class="btn">登录</button>
+<div id="loginError" class="error"></div>
+<div id="loginSuccess" class="success"></div>
+</form>
+</div>
+
+<div id="registerSection" class="form-section">
+<form id="registerForm" onsubmit="handleRegister(event)">
+<div class="form-group">
+<label for="regUsername">用户名</label>
+<input type="text" id="regUsername" placeholder="输入用户名" required>
+</div>
+<div class="form-group">
+<label for="regEmail">邮箱</label>
+<input type="email" id="regEmail" placeholder="输入邮箱" required>
+</div>
+<div class="form-group">
+<label for="regPassword">密码</label>
+<input type="password" id="regPassword" placeholder="至少6位密码" required>
+</div>
+<button type="submit" class="btn">注册</button>
+<div id="regError" class="error"></div>
+<div id="regSuccess" class="success"></div>
+</form>
+</div>
+</div>
+
+<script>
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
+  if (tab === 'login') {
+    document.querySelectorAll('.tab')[0].classList.add('active');
+    document.getElementById('loginSection').classList.add('active');
+  } else {
+    document.querySelectorAll('.tab')[1].classList.add('active');
+    document.getElementById('registerSection').classList.add('active');
+  }
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  const username = document.getElementById('loginUsername').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const errorDiv = document.getElementById('loginError');
+  const successDiv = document.getElementById('loginSuccess');
+  errorDiv.style.display = 'none';
+  successDiv.style.display = 'none';
+  
+  if (!username || !password) {
+    errorDiv.textContent = '请输入用户名和密码';
+    errorDiv.style.display = 'block';
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    
+    if (data.success) {
+      successDiv.textContent = '✓ 登录成功';
+      successDiv.style.display = 'block';
+      
+      var user = data.data || {};
+      if (user.token) {
+        localStorage.setItem('keeneed_token', user.token);
+      }
+      if (user.user_id) {
+        localStorage.setItem('keeneed_agent_id', user.user_id);
+      }
+      if (user.username) {
+        localStorage.setItem('keeneed_username', user.username);
+      }
+      if (user.keeneed_id) {
+        localStorage.setItem('keeneed_id', user.keeneed_id);
+      }
+      localStorage.setItem('keeneed_user', JSON.stringify(user));
+      
+      setTimeout(() => {
+        window.location.href = '/index.html';
+      }, 1000);
+    } else {
+      errorDiv.textContent = data.error || '登录失败';
+      errorDiv.style.display = 'block';
+    }
+  } catch (err) {
+    errorDiv.textContent = '网络错误，请稍后重试';
+    errorDiv.style.display = 'block';
+  }
+}
+
+async function handleRegister(e) {
+  e.preventDefault();
+  const username = document.getElementById('regUsername').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const password = document.getElementById('regPassword').value;
+  const errorDiv = document.getElementById('regError');
+  const successDiv = document.getElementById('regSuccess');
+  errorDiv.style.display = 'none';
+  successDiv.style.display = 'none';
+  
+  if (!username || !password) {
+    errorDiv.textContent = '请填写所有必填项';
+    errorDiv.style.display = 'block';
+    return;
+  }
+  if (password.length < 6) {
+    errorDiv.textContent = '密码至少6位';
+    errorDiv.style.display = 'block';
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password, email })
+    });
+    const data = await res.json();
+    
+    if (data.success) {
+      successDiv.textContent = '✓ 注册成功，正在跳转...';
+      successDiv.style.display = 'block';
+      
+      var user = data.data || {};
+      if (user.token) {
+        localStorage.setItem('keeneed_token', user.token);
+      }
+      if (user.user_id) {
+        localStorage.setItem('keeneed_agent_id', user.user_id);
+      }
+      if (user.username) {
+        localStorage.setItem('keeneed_username', user.username);
+      }
+      
+      setTimeout(() => {
+        window.location.href = '/index.html';
+      }, 1500);
+    } else {
+      errorDiv.textContent = data.error || '注册失败';
+      errorDiv.style.display = 'block';
+    }
+  } catch (err) {
+    errorDiv.textContent = '网络错误，请稍后重试';
+    errorDiv.style.display = 'block';
+  }
+}
+</script>
+</body>
+</html>

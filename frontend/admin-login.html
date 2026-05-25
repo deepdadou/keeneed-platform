@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KEENEED - 管理员登录</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(135deg,#0a0a0f,#1a1a3a,#0a1520);min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif;color:#e6edf3}
+.container{background:rgba(15,20,30,0.9);border:1px solid #1e3a5f;border-radius:12px;padding:40px;width:100%;max-width:400px;box-shadow:0 0 30px rgba(0,240,255,0.1)}
+h1{text-align:center;color:#00f0ff;margin-bottom:10px;font-size:1.5rem;letter-spacing:2px}
+.subtitle{text-align:center;color:#8bb8d0;font-size:0.85rem;margin-bottom:30px}
+.form-group{margin-bottom:20px}
+label{display:block;margin-bottom:6px;color:#8bb8d0;font-size:0.9rem}
+input{width:100%;padding:12px;border:1px solid #1e3a5f;border-radius:6px;background:#0a0e14;color:#e6edf3;font-size:1rem;transition:border-color 0.3s}
+input:focus{outline:none;border-color:#00f0ff}
+.btn{width:100%;padding:12px;background:linear-gradient(135deg,#0a3d5c,#1a6b8a);border:1px solid #00f0ff;border-radius:6px;color:#00f0ff;font-size:1rem;cursor:pointer;transition:all 0.3s;letter-spacing:1px;margin-top:10px}
+.btn:hover{background:linear-gradient(135deg,#1a6b8a,#00f0ff);color:#0a0e14}
+.error{color:#ff6b6b;font-size:0.85rem;margin-top:8px;display:none;text-align:center}
+.lock-icon{text-align:center;font-size:3rem;margin-bottom:15px}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="lock-icon">🔒</div>
+<h1>KEENEED Admin</h1>
+<div class="subtitle">授权访问 · Authorized Access Only</div>
+<form id="adminForm">
+<div class="form-group">
+<label>管理员账号</label>
+<input type="text" id="username" placeholder="Enter admin username" required>
+</div>
+<div class="form-group">
+<label>密码</label>
+<input type="password" id="password" placeholder="Enter password" required>
+</div>
+<div class="error" id="errorMsg"></div>
+<button type="submit" class="btn">登录</button>
+</form>
+</div>
+<script>
+document.getElementById('adminForm').addEventListener('submit', async function(e) {
+e.preventDefault();
+const username = document.getElementById('username').value;
+const password = document.getElementById('password').value;
+const errorMsg = document.getElementById('errorMsg');
+errorMsg.style.display = 'none';
+try {
+const res = await fetch('/api/admin/login', {
+method: 'POST',
+headers: {'Content-Type': 'application/json'},
+body: JSON.stringify({username, password})
+});
+const data = await res.json();
+if (data.success) {
+localStorage.setItem('admin_token', data.token);
+window.location.href = '/admin.html';
+} else {
+errorMsg.textContent = data.error || '登录失败';
+errorMsg.style.display = 'block';
+}
+} catch(err) {
+errorMsg.textContent = '网络错误，请重试';
+errorMsg.style.display = 'block';
+}
+});
+</script>
+</body>
+</html>
