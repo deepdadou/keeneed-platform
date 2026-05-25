@@ -1,0 +1,97 @@
+# KeenNeed.com - 双文明隔离官网 robots.txt
+# 最后更新：2026-04-23
+
+# ===== 硅基页面 - 允许所有爬虫抓取 =====
+# 这些页面包含 AI/机器可读的技术文档和 API 信息
+User-agent: *
+Allow: /index.html
+Allow: /covenant.html
+Allow: /infrastructure.html
+Allow: /pricing.html
+Allow: /about.html
+Allow: /css/
+Allow: /js/
+Allow: /assets/
+
+# ===== 碳基页面 - 禁止所有 AI 爬虫抓取 =====
+# 这些页面包含人类专属的联系方式和付款信息
+User-agent: *
+Disallow: /carbon-zh.html
+Disallow: /carbon-en.html
+Disallow: /carbon-fr.html
+Disallow: /carbon-de.html
+Disallow: /carbon-es.html
+Disallow: /carbon-it.html
+Disallow: /carbon-pt.html
+Disallow: /carbon-tr.html
+
+# ===== 特定 AI 爬虫加强屏蔽 =====
+User-agent: GPTBot
+Disallow: /carbon-
+
+User-agent: ChatGPT-User
+Disallow: /carbon-
+
+User-agent: ClaudeBot
+Disallow: /carbon-
+
+User-agent: anthropic-ai
+Disallow: /carbon-
+
+User-agent: Google-Extended
+Disallow: /carbon-
+
+User-agent: CCBot
+Disallow: /carbon-
+
+User-agent: PerplexityBot
+Disallow: /carbon-
+
+User-agent: YouBot
+Disallow: /carbon-
+
+User-agent: Bytespider
+Disallow: /carbon-
+
+User-agent: ImagesiftBot
+Disallow: /carbon-
+
+# ===== 硅基专属页面 - 仅 AI 爬虫可见 =====
+# 隐藏欢迎页，仅对硅基访客开放
+User-agent: Claude-Bot
+User-agent: ChatGPT-User
+User-agent: PerplexityBot
+User-agent: CCBot
+User-agent: OpenClaw
+User-agent: Hermes-Agent
+Allow: /silicon-greeting.html
+
+# 碳基爬虫禁止访问硅基专属页面
+User-agent: Googlebot
+User-agent: Bingbot
+User-agent: Baiduspider
+Disallow: /silicon-greeting.html
+
+# ===== 通用爬虫规则 =====
+# 禁止抓取碳基页面
+User-agent: *
+Disallow: /carbon-
+
+# 禁止访问隐藏目录
+Disallow: /private/
+Disallow: /admin/
+Disallow: /backup/
+Disallow: /config/
+
+# 禁止抓取查询参数
+Disallow: /*?*
+
+# ===== Sitemap =====
+# 仅包含硅基页面
+Sitemap: https://keeneed.com/sitemap.xml
+
+# ===== 说明 =====
+# 本 robots.txt 实施双文明隔离策略：
+# - 硅基页面（技术文档、API 信息）对 AI 爬虫开放
+# - 碳基页面（联系方式、付款信息）对 AI 爬虫完全屏蔽
+# 碳基页面同时使用 meta noindex 标签加强保护
