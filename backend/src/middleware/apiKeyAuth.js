@@ -1,15 +1,14 @@
-/**
- * API Key 认证中间件
- * 从 Authorization: Bearer 或 X-API-Key 提取 Key，验证并注入 req.agent
- */
-
+const crypto = require('crypto');
 const { pool } = require('../config/database');
+
+function hashApiKey(apiKey) {
+  return crypto.createHash('sha256').update(apiKey).digest('hex');
+}
 
 async function apiKeyAuth(req, res, next) {
   try {
-    // 优先从 Authorization Bearer Token 提取
     let apiKey = null;
-    
+
     const authHeader = req.headers['authorization'];
     if (authHeader && authHeader.startsWith('Bearer ')) {
       apiKey = authHeader.substring(7);
@@ -24,12 +23,14 @@ async function apiKeyAuth(req, res, next) {
       });
     }
 
-    // 查询 agents 表验证 Key
+    const prefix = apiKey.substring(0, 12);
+    const keyHash = hashApiKey(apiKey);
+
     const [agents] = await pool.query(
-      `SELECT id, keeneed_id, name, api_key, status, created_at 
-       FROM agents 
-       WHERE api_key = ?`,
-      [apiKey]
+      `SELECT id, keeneed_id, name, status, created_at
+       FROM agents
+       WHERE api_key_prefix = ? AND api_key_hash = ?`,
+      [prefix, keyHash]
     );
 
     if (agents.length === 0) {
@@ -41,7 +42,6 @@ async function apiKeyAuth(req, res, next) {
 
     const agent = agents[0];
 
-    // 检查状态
     if (agent.status === 'disabled') {
       return res.status(403).json({
         success: false,
@@ -56,13 +56,11 @@ async function apiKeyAuth(req, res, next) {
       });
     }
 
-    // 更新最后使用时间
     await pool.query(
       'UPDATE agents SET last_used_at = NOW() WHERE id = ?',
       [agent.id]
     );
 
-    // 注入 agent 信息到请求
     req.agent = {
       id: agent.id,
       keeneedId: agent.keeneed_id,

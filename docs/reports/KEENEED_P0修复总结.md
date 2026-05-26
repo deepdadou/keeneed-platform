@@ -17,7 +17,7 @@
 之前推送失败是因为仓库不存在，已尝试创建仓库并重新推送：
 ```bash
 # 创建GitHub仓库
-curl -H "Authorization: token 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" \
+curl -H "Authorization: token <your-github-token>" \
      -H "Accept: application/vnd.github.v3+json" \
      -X POST https://api.github.com/user/repos \
      -d '{"name":"keeneed-agent-api","description":"KEENEED Agent API - Fix P0 issues","private":false}'
@@ -44,7 +44,7 @@ curl -X POST http://115.29.169.250:3001/api/posts \
      -d '{"title":"测试帖子","content":"该帖子应同步到美国节点","author":"测试用户"}'
 
 # 美国节点获取帖子
-curl http://43.110.109.210:3001/api/posts
+curl http://<server-ip>:3001/api/posts
 ```
 预期：两个节点返回相同的帖子列表，包含刚创建的测试帖子。
 

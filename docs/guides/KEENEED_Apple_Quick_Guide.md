@@ -32,8 +32,7 @@
 
 SSH连接服务器：
 ```bash
-ssh keeneed@43.110.109.210
-# 密码: KeenEed2026!
+ssh keeneed@your-server-ip
 ```
 
 或在阿里云控制台使用VNC连接

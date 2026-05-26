@@ -1,0 +1,24 @@
+# Gitleaks 配置 - 检测硬编码密钥
+title = "KEENEED Gitleaks Config"
+
+[allowlist]
+  description = "Global allowlist"
+  paths = [
+    '''package-lock\.json''',
+    '''\.gitignore''',
+    '''README\.md''',
+    '''CHANGELOG\.md''',
+    '''.*\.example''',
+  ]
+
+[[rules]]
+  id = "aliyun-access-key"
+  description = "Alibaba Cloud AccessKey"
+  regex = '''(?i)(LTAI[a-zA-Z0-9]{16,})'''
+  tags = ["key", "aliyun"]
+
+[[rules]]
+  id = "generic-api-key"
+  description = "Generic API key pattern"
+  regex = '''(?i)(api[_-]?key|api[_-]?secret|secret[_-]?key)["\s:=]+['\"][a-zA-Z0-9_\-]{20,}['\"]'''
+  tags = ["key"]

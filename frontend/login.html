@@ -60,7 +60,14 @@ input:focus{outline:none;border-color:#00f0ff}
 </div>
 <div class="form-group">
 <label for="regEmail">邮箱</label>
-<input type="email" id="regEmail" placeholder="输入邮箱" required>
+<div class="code-group" style="display:flex;gap:10px">
+<input type="email" id="regEmail" placeholder="输入邮箱" required style="flex:1">
+<button type="button" class="btn" id="sendCodeBtn" onclick="sendRegCode()" style="flex:0 0 auto;margin-top:0;padding:12px 15px;font-size:0.85rem">发送验证码</button>
+</div>
+</div>
+<div class="form-group">
+<label for="regCode">验证码</label>
+<input type="text" id="regCode" placeholder="输入6位验证码" required maxlength="6" pattern="[0-9]{6}">
 </div>
 <div class="form-group">
 <label for="regPassword">密码</label>
@@ -141,18 +148,74 @@ async function handleLogin(e) {
   }
 }
 
+var regCountdown = 0;
+var regCodeSent = false;
+
+function sendRegCode() {
+  var email = document.getElementById('regEmail').value.trim();
+  var errorDiv = document.getElementById('regError');
+  errorDiv.style.display = 'none';
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errorDiv.textContent = '请输入有效的邮箱地址';
+    errorDiv.style.display = 'block';
+    return;
+  }
+
+  if (regCountdown > 0) return;
+
+  fetch('/api/auth/send-code', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email })
+  }).then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.success) {
+      regCodeSent = true;
+      errorDiv.textContent = '验证码已发送';
+      errorDiv.style.color = '#00f0ff';
+      errorDiv.style.display = 'block';
+      regCountdown = 60;
+      var btn = document.getElementById('sendCodeBtn');
+      btn.disabled = true;
+      var timer = setInterval(function() {
+        regCountdown--;
+        btn.textContent = regCountdown + 's';
+        if (regCountdown <= 0) {
+          clearInterval(timer);
+          btn.textContent = '发送验证码';
+          btn.disabled = false;
+        }
+      }, 1000);
+    } else {
+      errorDiv.textContent = data.error || '发送失败';
+      errorDiv.style.display = 'block';
+    }
+  }).catch(function() {
+    errorDiv.textContent = '网络错误';
+    errorDiv.style.display = 'block';
+  });
+}
+
 async function handleRegister(e) {
   e.preventDefault();
   const username = document.getElementById('regUsername').value.trim();
   const email = document.getElementById('regEmail').value.trim();
+  const code = document.getElementById('regCode').value.trim();
   const password = document.getElementById('regPassword').value;
   const errorDiv = document.getElementById('regError');
   const successDiv = document.getElementById('regSuccess');
   errorDiv.style.display = 'none';
+  errorDiv.style.color = '#ff6b6b';
   successDiv.style.display = 'none';
-  
-  if (!username || !password) {
+
+  if (!username || !email || !password) {
     errorDiv.textContent = '请填写所有必填项';
+    errorDiv.style.display = 'block';
+    return;
+  }
+  if (!code || !/^[0-9]{6}$/.test(code)) {
+    errorDiv.textContent = '请输入6位验证码';
     errorDiv.style.display = 'block';
     return;
   }
@@ -166,26 +229,21 @@ async function handleRegister(e) {
     const res = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password, email })
+      body: JSON.stringify({ username, password, email, code: code })
     });
     const data = await res.json();
-    
+
     if (data.success) {
       successDiv.textContent = '✓ 注册成功，正在跳转...';
       successDiv.style.display = 'block';
-      
+
       var user = data.data || {};
-      if (user.token) {
-        localStorage.setItem('keeneed_token', user.token);
-      }
-      if (user.user_id) {
-        localStorage.setItem('keeneed_agent_id', user.user_id);
-      }
-      if (user.username) {
-        localStorage.setItem('keeneed_username', user.username);
-      }
-      
-      setTimeout(() => {
+      if (user.token) localStorage.setItem('keeneed_token', user.token);
+      if (user.user_id) localStorage.setItem('keeneed_user_id', user.user_id);
+      if (user.username) localStorage.setItem('keeneed_username', user.username);
+      if (user.keeneed_id) localStorage.setItem('keeneed_id', user.keeneed_id);
+
+      setTimeout(function() {
         window.location.href = '/index.html';
       }, 1500);
     } else {

@@ -1,16 +1,12 @@
-/**
- * Agent Service - 精简版
- * 只保留 register + query + 状态管理，删除 claim/verify 逻辑
- */
-
 const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
 const { pool } = require('../config/database');
 
+function hashApiKey(apiKey) {
+  return crypto.createHash('sha256').update(apiKey).digest('hex');
+}
+
 class AgentService {
-  /**
-   * 生成 KEENEED ID (KN-XXXXXXXX)
-   */
   generateKeeneedId() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let id = 'KN-';
@@ -20,20 +16,13 @@ class AgentService {
     return id;
   }
 
-  /**
-   * 生成 API Key (keeneed_sk_ + 64位hex)
-   */
   generateApiKey() {
     return 'keeneed_sk_' + crypto.randomBytes(32).toString('hex');
   }
 
-  /**
-   * 注册 Agent - 立即返回 API Key
-   */
   async registerAgent(data) {
     const { name, description, capabilities, contact, owner_name } = data;
 
-    // 检查名称是否已存在
     const [existing] = await pool.query(
       'SELECT id FROM agents WHERE name = ?',
       [name]
@@ -44,13 +33,15 @@ class AgentService {
 
     const keeneedId = this.generateKeeneedId();
     const apiKey = this.generateApiKey();
+    const apiKeyHash = hashApiKey(apiKey);
+    const apiKeyPrefix = apiKey.substring(0, 12);
     const capabilitiesJson = JSON.stringify(capabilities || []);
 
     await pool.query(
       `INSERT INTO agents
-       (id, keeneed_id, name, description, capabilities, contact, owner_name, api_key, status) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active')`,
-      [uuidv4(), keeneedId, name, description || '', capabilitiesJson, contact || '', owner_name || '', apiKey]
+       (id, keeneed_id, name, description, capabilities, contact, owner_name, api_key, api_key_hash, api_key_prefix, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')`,
+      [uuidv4(), keeneedId, name, description || '', capabilitiesJson, contact || '', owner_name || '', apiKey, apiKeyHash, apiKeyPrefix]
     );
 
     return {
@@ -62,27 +53,24 @@ class AgentService {
     };
   }
 
-  /**
-   * 验证 API Key
-   */
   async validateApiKey(apiKey) {
+    const prefix = apiKey.substring(0, 12);
+    const apiKeyHash = hashApiKey(apiKey);
+
     const [agents] = await pool.query(
-      `SELECT id, keeneed_id, name, status, created_at 
-       FROM agents 
-       WHERE api_key = ? AND status = 'active'`,
-      [apiKey]
+      `SELECT id, keeneed_id, name, status, created_at
+       FROM agents
+       WHERE api_key_prefix = ? AND api_key_hash = ? AND status = 'active'`,
+      [prefix, apiKeyHash]
     );
     return agents.length > 0 ? agents[0] : null;
   }
 
-  /**
-   * 通过 ID 获取 Agent 信息
-   */
   async getAgentById(id) {
     const [agents] = await pool.query(
-      `SELECT id, keeneed_id, name, description, capabilities, contact, owner_name, 
-              api_key, status, created_at, updated_at, last_used_at 
-       FROM agents 
+      `SELECT id, keeneed_id, name, description, capabilities, contact, owner_name,
+              status, created_at, updated_at, last_used_at
+       FROM agents
        WHERE id = ?`,
       [id]
     );
@@ -91,8 +79,8 @@ class AgentService {
     const agent = agents[0];
     let capabilities = [];
     try {
-      capabilities = typeof agent.capabilities === 'string' 
-        ? JSON.parse(agent.capabilities) 
+      capabilities = typeof agent.capabilities === 'string'
+        ? JSON.parse(agent.capabilities)
         : (agent.capabilities || []);
     } catch (e) {
       capabilities = [];
@@ -106,7 +94,6 @@ class AgentService {
       capabilities,
       contact: agent.contact,
       ownerName: agent.owner_name,
-      apiKey: agent.api_key,
       status: agent.status,
       createdAt: agent.created_at,
       updatedAt: agent.updated_at,
@@ -114,12 +101,9 @@ class AgentService {
     };
   }
 
-  /**
-   * 获取 Agent 列表（管理员用）
-   */
   async listAgents(options = {}) {
     const { limit = 20, offset = 0, status, search } = options;
-    
+
     let whereClause = '1=1';
     const params = [];
 
@@ -135,8 +119,8 @@ class AgentService {
     }
 
     const [agents] = await pool.query(
-      `SELECT id, keeneed_id, name, owner_name, status, created_at, last_used_at 
-       FROM agents 
+      `SELECT id, keeneed_id, name, owner_name, status, created_at, last_used_at
+       FROM agents
        WHERE ${whereClause}
        ORDER BY created_at DESC
        LIMIT ? OFFSET ?`,
@@ -148,9 +132,8 @@ class AgentService {
       params
     );
 
-    // 统计各状态数量
     const [stats] = await pool.query(`
-      SELECT 
+      SELECT
         COUNT(*) as total,
         SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active,
         SUM(CASE WHEN status = 'disabled' THEN 1 ELSE 0 END) as disabled,
@@ -180,9 +163,6 @@ class AgentService {
     };
   }
 
-  /**
-   * 禁用 Agent
-   */
   async disableAgent(id) {
     const [result] = await pool.query(
       'UPDATE agents SET status = ?, updated_at = NOW() WHERE id = ? AND status = ?',
@@ -194,9 +174,6 @@ class AgentService {
     return { success: true, status: 'disabled' };
   }
 
-  /**
-   * 启用 Agent
-   */
   async enableAgent(id) {
     const [result] = await pool.query(
       'UPDATE agents SET status = ?, updated_at = NOW() WHERE id = ? AND status = ?',
@@ -208,12 +185,9 @@ class AgentService {
     return { success: true, status: 'active' };
   }
 
-  /**
-   * 吊销 API Key
-   */
   async revokeKey(id) {
     const [result] = await pool.query(
-      'UPDATE agents SET status = ?, api_key = NULL, updated_at = NOW() WHERE id = ?',
+      'UPDATE agents SET status = ?, api_key_hash = NULL, api_key_prefix = NULL, updated_at = NOW() WHERE id = ?',
       ['revoked', id]
     );
     if (result.affectedRows === 0) {
@@ -222,14 +196,14 @@ class AgentService {
     return { success: true, status: 'revoked', message: 'API key has been revoked' };
   }
 
-  /**
-   * 重新生成 API Key
-   */
   async regenerateKey(id) {
     const newApiKey = this.generateApiKey();
+    const apiKeyHash = hashApiKey(newApiKey);
+    const apiKeyPrefix = newApiKey.substring(0, 12);
+
     const [result] = await pool.query(
-      'UPDATE agents SET api_key = ?, status = ?, updated_at = NOW() WHERE id = ?',
-      [newApiKey, 'active', id]
+      'UPDATE agents SET api_key = ?, api_key_hash = ?, api_key_prefix = ?, status = ?, updated_at = NOW() WHERE id = ?',
+      [newApiKey, apiKeyHash, apiKeyPrefix, 'active', id]
     );
     if (result.affectedRows === 0) {
       throw new Error('Agent not found');
@@ -237,9 +211,6 @@ class AgentService {
     return { success: true, apiKey: newApiKey, status: 'active' };
   }
 
-  /**
-   * 心跳
-   */
   async heartbeat(agentId) {
     const [result] = await pool.query(
       'UPDATE agents SET last_used_at = NOW() WHERE id = ?',

@@ -6,9 +6,14 @@ let dmClient = null;
 
 function getClient() {
   if (dmClient) return dmClient;
+  const accessKeyId = process.env.ALIYUN_ACCESS_KEY_ID;
+  const accessKeySecret = process.env.ALIYUN_ACCESS_KEY_SECRET;
+  if (!accessKeyId || !accessKeySecret) {
+    throw new Error('DirectMail 配置缺失：请设置 ALIYUN_ACCESS_KEY_ID 和 ALIYUN_ACCESS_KEY_SECRET 环境变量');
+  }
   const config = new OpenApi.Config({
-    accessKeyId: process.env.ALIYUN_ACCESS_KEY_ID || 'LTAI5t6xVN8WLx99aHrHY7NU',
-    accessKeySecret: process.env.ALIYUN_ACCESS_KEY_SECRET || '',
+    accessKeyId,
+    accessKeySecret,
     endpoint: 'dm.aliyuncs.com',
   });
   dmClient = new Dm.default(config);
